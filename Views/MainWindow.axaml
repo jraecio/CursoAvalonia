@@ -16,7 +16,7 @@
     </Design.DataContext>
 
 	<Grid Margin="20"
-      RowDefinitions="Auto,Auto,Auto,*"
+      RowDefinitions="Auto,Auto,Auto,Auto,*"
       ColumnDefinitions="*,*">
 
 		<TextBlock
@@ -94,6 +94,24 @@
     HorizontalAlignment="Center"
     Margin="0,20,0,0"
     Command="{Binding AdicionarItemCommand}"/>
+
+		<DataGrid
+    Grid.Row="4"
+    Grid.ColumnSpan="2"
+    ItemsSource="{Binding Itens}"
+    AutoGenerateColumns="False"
+    Margin="0,20,0,0"
+    Height="180">
+
+			<DataGrid.Columns>
+				<DataGridTextColumn Header="Código" Binding="{Binding Codigo}" />
+				<DataGridTextColumn Header="Descrição" Binding="{Binding Descricao}" />
+				<DataGridTextColumn Header="Quantidade" Binding="{Binding Quantidade}" />
+				<DataGridTextColumn Header="Valor" Binding="{Binding Valor}" />
+				<DataGridTextColumn Header="Total" Binding="{Binding Total}" />
+			</DataGrid.Columns>
+
+		</DataGrid>
 
 	</Grid>
 			

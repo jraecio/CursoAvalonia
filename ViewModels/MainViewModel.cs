@@ -34,7 +34,14 @@ public partial class MainViewModel : ViewModelBase
         item.Valor = Convert.ToDecimal(Valor);
 
         Itens.Add(item);
+
+        Codigo = string.Empty;
+        Descricao = string.Empty;
+        Quantidade = string.Empty;
+        Valor = string.Empty;
     }
+
+    
 
     partial void OnCodigoChanged(string value)
     {
