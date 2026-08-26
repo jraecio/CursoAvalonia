@@ -1,5 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia;
+using Avalonia.Styling;
 
 namespace CursoAvalonia.Views;
 
@@ -8,6 +10,21 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+    }
+
+    private void AlternarTema_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (Application.Current is not { } app)
+            return;
+
+        if (app.ActualThemeVariant == ThemeVariant.Dark)
+        {
+            app.RequestedThemeVariant = ThemeVariant.Light;
+        }
+        else
+        {
+            app.RequestedThemeVariant = ThemeVariant.Dark;
+        }
     }
 
     private void Codigo_KeyDown(object? sender, KeyEventArgs e)

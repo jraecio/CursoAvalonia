@@ -23,25 +23,70 @@ public partial class MainViewModel : ViewModelBase
 
     public ObservableCollection<ItemVenda> Itens { get; } = new();
 
+    [ObservableProperty]
+    private string mensagem = string.Empty;
+
+    [ObservableProperty]
+    private string desconto = string.Empty;
+
+    [ObservableProperty]
+    private decimal subTotal;
+
+    [ObservableProperty]
+    private decimal total;
+
+    [ObservableProperty]
+    private ItemVenda? itemSelecionado;
+
+
     [RelayCommand]
     private void AdicionarItem()
     {
-        ItemVenda item = new ItemVenda();
+        Mensagem = string.Empty;
 
-        item.Codigo = Convert.ToInt32(Codigo);
-        item.Descricao = Descricao;
-        item.Quantidade = Convert.ToDecimal(Quantidade);
-        item.Valor = Convert.ToDecimal(Valor);
+        try
+        {
+            ItemVenda item = new ItemVenda();
 
-        Itens.Add(item);
+            item.Codigo = Convert.ToInt32(Codigo);
+            item.Descricao = Descricao;
+            item.Quantidade = Convert.ToDecimal(Quantidade);
+            item.Valor = Convert.ToDecimal(Valor);
 
-        Codigo = string.Empty;
-        Descricao = string.Empty;
-        Quantidade = string.Empty;
-        Valor = string.Empty;
+            Itens.Add(item);
+
+            Total = Itens.Sum(x => x.Total);
+            SubTotal = Total;
+
+            Codigo = string.Empty;
+            Descricao = string.Empty;
+            Quantidade = string.Empty;
+            Valor = string.Empty;
+        }
+        catch (Exception)
+        {
+            Mensagem = "Preencha Código, Quantidade e Valor corretamente.";
+        }
     }
 
-    
+    [RelayCommand]
+    private void RemoverItem()
+    {
+        if (ItemSelecionado == null)
+            return;
+
+        Itens.Remove(ItemSelecionado);
+
+        Total = Itens.Sum(x => x.Total);
+
+        AtualizarSubTotal();
+
+        ItemSelecionado = null;
+    }
+
+
+
+
 
     partial void OnCodigoChanged(string value)
     {
@@ -50,4 +95,25 @@ public partial class MainViewModel : ViewModelBase
             Codigo = new string(value.Where(char.IsDigit).ToArray());
         }
     }
+      
+    partial void OnDescontoChanged(string value)
+    {
+        AtualizarSubTotal();
+    }
+
+    private void AtualizarSubTotal()
+    {
+        decimal valorDesconto = 0;
+
+        if (!string.IsNullOrWhiteSpace(Desconto))
+        {
+            decimal.TryParse(Desconto, out valorDesconto);
+        }
+
+        SubTotal = Total - valorDesconto;
+    }
+
+
+
+
 }

@@ -3,117 +3,191 @@
         xmlns:vm="using:CursoAvalonia.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d"
+        d:DesignWidth="650"
+        d:DesignHeight="500"
         x:Class="CursoAvalonia.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="CursoAvalonia">
+        Title="Tela de Vendas"
+        Width="650"
+        Height="500">
 
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainViewModel />
-    </Design.DataContext>
+	<Design.DataContext>
+		<vm:MainViewModel />
+	</Design.DataContext>
 
-	<Grid Margin="20"
-      RowDefinitions="Auto,Auto,Auto,Auto,*"
-      ColumnDefinitions="*,*">
+	<Grid Margin="15"
+          RowDefinitions="Auto,Auto,Auto,Auto,*,Auto"
+          RowSpacing="10">
 
+		<Grid Grid.Row="0"
+      ColumnDefinitions="*,Auto">
+
+			<TextBlock
+				Grid.Column="0"
+				Text="TELA DE VENDAS"
+				FontSize="20"
+				FontWeight="Bold"
+				HorizontalAlignment="Center"
+				VerticalAlignment="Center"/>
+
+			<Button
+				Grid.Column="1"
+				Content="🌙"
+				Width="40"
+				Height="32"
+				HorizontalAlignment="Right"
+				Click="AlternarTema_Click"/>
+
+		</Grid>
+
+
+		<!-- CÓDIGO E DESCRIÇÃO -->
+		<Grid Grid.Row="1"
+              ColumnDefinitions="120,*"
+              ColumnSpacing="10">
+
+			<StackPanel Grid.Column="0">
+				<TextBlock Text="Código"/>
+
+				<TextBox
+                    Text="{Binding Codigo}"
+                    KeyDown="Codigo_KeyDown"/>
+			</StackPanel>
+
+			<StackPanel Grid.Column="1">
+				<TextBlock Text="Descrição"/>
+
+				<TextBox
+                    Text="{Binding Descricao}"/>
+			</StackPanel>
+
+		</Grid>
+
+
+		<!-- QUANTIDADE, VALOR E BOTÃO -->
+		<Grid Grid.Row="2"
+              ColumnDefinitions="120,120,*"
+              ColumnSpacing="10">
+
+			<StackPanel Grid.Column="0">
+				<TextBlock Text="Quantidade"/>
+
+				<TextBox
+                    Text="{Binding Quantidade}"
+                    KeyDown="Decimal_KeyDown"/>
+			</StackPanel>
+
+			<StackPanel Grid.Column="1">
+				<TextBlock Text="Valor"/>
+
+				<TextBox
+                    Text="{Binding Valor}"
+                    KeyDown="Decimal_KeyDown"/>
+			</StackPanel>
+
+			<StackPanel
+    Grid.Column="2"
+    Orientation="Horizontal"
+    HorizontalAlignment="Right"
+    VerticalAlignment="Bottom"
+    Spacing="8">
+
+				<Button
+					Content="Adicionar"
+					Width="100"
+					Height="30"
+					Command="{Binding AdicionarItemCommand}"/>
+
+				<Button
+					Content="Remover"
+					Width="100"
+					Height="30"
+					Command="{Binding RemoverItemCommand}"/>
+
+			</StackPanel>
+
+		</Grid>
+
+
+		<!-- MENSAGEM -->
 		<TextBlock
-			Grid.Row="0"
-			Grid.ColumnSpan="2"
-			Text="TELA DE VENDAS"
-			FontSize="24"
-			HorizontalAlignment="Center"
-			Margin="0,0,0,20"/>
-		
-		<StackPanel
-		Grid.Row="1"
-		Grid.Column="0"
-		Margin="0,0,10,10">
+            Grid.Row="3"
+            Text="{Binding Mensagem}"
+            HorizontalAlignment="Center"/>
 
-			<TextBlock Text="Código"/>
 
-			<TextBox
-			Text="{Binding Codigo}"
-			Width="150"
-			HorizontalAlignment="Left"
-			KeyDown="Codigo_KeyDown"/>
-
-		</StackPanel>
-
-		<StackPanel
-    Grid.Row="1"
-    Grid.Column="1"
-    Margin="10,0,0,10">
-
-			<TextBlock Text="Descrição"/>
-
-			<TextBox
-				Text="{Binding Descricao}"
-				Width="300"
-				HorizontalAlignment="Left"/>
-
-		</StackPanel>
-
-		<StackPanel
-    Grid.Row="2"
-    Grid.Column="0"
-    Margin="0,0,10,10">
-
-			<TextBlock Text="Quantidade"/>
-
-			<TextBox
-				Text="{Binding Quantidade}"
-				Width="150"
-				HorizontalAlignment="Left"
-				KeyDown="Decimal_KeyDown"/>
-
-		</StackPanel>
-
-		<StackPanel
-    Grid.Row="2"
-    Grid.Column="1"
-    Margin="10,0,0,10">
-
-			<TextBlock Text="Valor"/>
-
-			<TextBox
-				Text="{Binding Valor}"
-				Width="150"
-				HorizontalAlignment="Left"
-				KeyDown="Decimal_KeyDown"/>
-
-		</StackPanel>
-
-		<Button
-    Grid.Row="3"
-    Grid.ColumnSpan="2"
-    Content="Adicionar"
-    Width="120"
-    HorizontalAlignment="Center"
-    Margin="0,20,0,0"
-    Command="{Binding AdicionarItemCommand}"/>
-
+		<!-- ITENS -->
 		<DataGrid
-    Grid.Row="4"
-    Grid.ColumnSpan="2"
-    ItemsSource="{Binding Itens}"
-    AutoGenerateColumns="False"
-    Margin="0,20,0,0"
-    Height="180">
+            Grid.Row="4"
+            ItemsSource="{Binding Itens}"
+			SelectedItem="{Binding ItemSelecionado}"
+            AutoGenerateColumns="False"
+            MinHeight="180">
 
 			<DataGrid.Columns>
-				<DataGridTextColumn Header="Código" Binding="{Binding Codigo}" />
-				<DataGridTextColumn Header="Descrição" Binding="{Binding Descricao}" />
-				<DataGridTextColumn Header="Quantidade" Binding="{Binding Quantidade}" />
-				<DataGridTextColumn Header="Valor" Binding="{Binding Valor}" />
-				<DataGridTextColumn Header="Total" Binding="{Binding Total}" />
+
+				<DataGridTextColumn
+                    Header="Código"
+                    Binding="{Binding Codigo}"/>
+
+				<DataGridTextColumn
+                    Header="Descrição"
+                    Binding="{Binding Descricao}"
+                    Width="*"/>
+
+				<DataGridTextColumn
+                    Header="Qtd."
+                    Binding="{Binding Quantidade}"/>
+
+				<DataGridTextColumn
+                    Header="Valor"
+                    Binding="{Binding Valor}"/>
+
+				<DataGridTextColumn
+                    Header="Total"
+                    Binding="{Binding Total}"/>
+
 			</DataGrid.Columns>
 
 		</DataGrid>
 
+
+		<!-- TOTAIS -->
+		<Grid Grid.Row="5"
+			  ColumnDefinitions="*,120,120,120"
+			  ColumnSpacing="10">
+
+			<!-- DESCONTO -->
+			<StackPanel Grid.Column="1">
+				<TextBlock Text="Desconto"/>
+
+				<TextBox
+					Text="{Binding Desconto}"
+					KeyDown="Decimal_KeyDown"/>
+			</StackPanel>
+
+			<!-- TOTAL -->
+			<StackPanel Grid.Column="2">
+				<TextBlock Text="Total"/>
+
+				<TextBox
+					Text="{Binding Total}"
+					IsReadOnly="True"/>
+			</StackPanel>
+
+			<!-- SUB TOTAL -->
+			<StackPanel Grid.Column="3">
+				<TextBlock Text="Sub Total"/>
+
+				<TextBox
+					Text="{Binding SubTotal}"
+					IsReadOnly="True"/>
+			</StackPanel>
+
+		</Grid>
+
 	</Grid>
-			
 
 </Window>
