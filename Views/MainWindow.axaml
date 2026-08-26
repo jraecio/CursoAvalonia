@@ -8,8 +8,8 @@
         d:DesignHeight="500"
         x:Class="CursoAvalonia.Views.MainWindow"
         x:DataType="vm:MainViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="Tela de Vendas"
+        Icon="/Assets/icone4.ico"
+        Title="Softcom Tecnologia - Curso Avalonia - Vendas"
         Width="650"
         Height="500">
 

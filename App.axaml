@@ -9,6 +9,14 @@
         <local:ViewLocator />
     </Application.DataTemplates>
 
+	<TrayIcon.Icons>
+		<TrayIcons>
+			<TrayIcon
+				Icon="/Assets/icone4.ico"
+				ToolTipText="Curso Avalonia"/>
+		</TrayIcons>
+	</TrayIcon.Icons>
+	
 	<Application.Styles>
 		<FluentTheme />
 		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
