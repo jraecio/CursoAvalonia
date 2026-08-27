@@ -52,6 +52,7 @@
 				<TextBlock Text="Código"/>
 
 				<TextBox
+					x:Name="txtCodigo"
                     Text="{Binding Codigo}"
                     KeyDown="Codigo_KeyDown"/>
 			</StackPanel>
@@ -95,13 +96,14 @@
     Spacing="8">
 
 				<Button
-					Content="Adicionar"
-					Width="100"
-					Height="30"
-					Command="{Binding AdicionarItemCommand}"/>
+    x:Name="btnAdicionar"
+    Content="Adicionar"
+    Width="100"
+    Height="30"
+    Command="{Binding AdicionarItemCommand}"/>
 
 				<Button
-					Content="Remover"
+					Content="Remover Item"
 					Width="100"
 					Height="30"
 					Command="{Binding RemoverItemCommand}"/>

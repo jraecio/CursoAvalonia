@@ -110,6 +110,12 @@ public partial class MainViewModel : ViewModelBase
             decimal.TryParse(Desconto, out valorDesconto);
         }
 
+        if (valorDesconto >= Total)
+        {
+            SubTotal = 0;
+            return;
+        }
+
         SubTotal = Total - valorDesconto;
     }
 

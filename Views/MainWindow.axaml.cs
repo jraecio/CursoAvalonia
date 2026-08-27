@@ -10,6 +10,8 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+
+        btnAdicionar.Click += Adicionar_Click;
     }
 
     private void AlternarTema_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -72,4 +74,10 @@ public partial class MainWindow : Window
             e.Handled = true;
         }
     }
+
+    private void Adicionar_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        txtCodigo.Focus();
+    }
+
 }
