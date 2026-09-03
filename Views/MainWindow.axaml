@@ -108,6 +108,12 @@
 					Height="30"
 					Command="{Binding RemoverItemCommand}"/>
 
+				<Button
+			Content="Finalizar Venda"
+			Width="120"
+			Height="30"
+			Command="{Binding FinalizarVendaCommand}"/>			
+
 			</StackPanel>
 
 		</Grid>

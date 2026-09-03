@@ -1,9 +1,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CursoAvalonia.Models;
+using CursoAvalonia.Services;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace CursoAvalonia.ViewModels;
 
@@ -40,6 +42,41 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private ItemVenda? itemSelecionado;
 
+    private readonly VendaService _vendaService = new();
+
+    [RelayCommand]
+    private async Task FinalizarVendaAsync()
+    {
+        try
+        {
+            decimal valorDesconto = 0;
+
+            if (!string.IsNullOrWhiteSpace(Desconto))
+            {
+                decimal.TryParse(Desconto, out valorDesconto);
+            }
+
+            await _vendaService.FinalizarVendaAsync(
+                Itens,
+                Total,
+                valorDesconto,
+                SubTotal
+            );
+
+            Mensagem = "Venda finalizada e salva com sucesso.";
+
+            Itens.Clear();
+
+            Total = 0;
+            SubTotal = 0;
+            Desconto = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            Mensagem = "Erro: " +
+                (ex.InnerException?.Message ?? ex.Message);
+        }
+    }
 
     [RelayCommand]
     private void AdicionarItem()
@@ -86,10 +123,6 @@ public partial class MainViewModel : ViewModelBase
         ItemSelecionado = null;
     }
 
-
-
-
-
     partial void OnCodigoChanged(string value)
     {
         if (!string.IsNullOrEmpty(value) && !value.All(char.IsDigit))
@@ -97,7 +130,7 @@ public partial class MainViewModel : ViewModelBase
             Codigo = new string(value.Where(char.IsDigit).ToArray());
         }
     }
-      
+
     partial void OnDescontoChanged(string value)
     {
         AtualizarSubTotal();
@@ -120,8 +153,4 @@ public partial class MainViewModel : ViewModelBase
 
         SubTotal = Total - valorDesconto;
     }
-
-
-
-
 }
