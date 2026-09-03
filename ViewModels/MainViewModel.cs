@@ -23,6 +23,8 @@ public partial class MainViewModel : ViewModelBase
 
     public ObservableCollection<ItemVenda> Itens { get; } = new();
 
+    public ObservableCollection<Produto> Produtos { get; } = new();
+
     [ObservableProperty]
     private string mensagem = string.Empty;
 
