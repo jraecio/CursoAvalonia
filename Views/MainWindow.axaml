@@ -6,20 +6,21 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         d:DesignWidth="1200"
-        d:DesignHeight="700"
+        d:DesignHeight="760"
         x:Class="CursoAvalonia.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Icon="/Assets/icone4.ico"
         Title="PDV DO AGIOTA"
         Width="1200"
-        Height="700"
+        Height="760"
         MinWidth="1000"
-        MinHeight="620"
+        MinHeight="680"
         Background="#F6F6F6">
 
     <Design.DataContext>
         <vm:MainViewModel />
     </Design.DataContext>
+
 
     <!-- ===================================================== -->
     <!-- ESTILOS                                               -->
@@ -40,6 +41,7 @@
             <Setter Property="BorderThickness" Value="2"/>
         </Style>
 
+
         <Style Selector="ComboBox">
             <Setter Property="Background" Value="White"/>
             <Setter Property="Foreground" Value="#171717"/>
@@ -51,6 +53,7 @@
             <Setter Property="BorderBrush" Value="#FFC400"/>
             <Setter Property="BorderThickness" Value="2"/>
         </Style>
+
 
         <Style Selector="AutoCompleteBox">
             <Setter Property="Background" Value="White"/>
@@ -73,6 +76,7 @@
     <!-- ===================================================== -->
 
     <Grid RowDefinitions="58,*">
+
 
         <!-- ================================================= -->
         <!-- CABEÇALHO                                         -->
@@ -105,6 +109,7 @@
 
                 </StackPanel>
 
+
                 <TextBlock
                     Grid.Column="1"
                     Text="Caixa: ABERTO  |  Operador: Admin"
@@ -124,165 +129,232 @@
         <Grid
             Grid.Row="1"
             Margin="14"
-            ColumnDefinitions="1.35*,1*"
-            ColumnSpacing="14">
+            RowDefinitions="Auto,*"
+            RowSpacing="12">
 
 
             <!-- ================================================= -->
-            <!-- COLUNA ESQUERDA                                   -->
+            <!-- BARRA DO PEDIDO                                   -->
+            <!-- ================================================= -->
+
+            <Border
+                Grid.Row="0"
+                Background="White"
+                BorderBrush="#DDDDDD"
+                BorderThickness="1"
+                CornerRadius="9"
+                Padding="12">
+
+                <Grid
+                    ColumnDefinitions="Auto,90,280,100,105,*,Auto"
+                    ColumnSpacing="10">
+
+
+                    <!-- TÍTULO -->
+
+                    <TextBlock
+                        Grid.Column="0"
+                        Text="Pedido"
+                        FontSize="15"
+                        FontWeight="Bold"
+                        Foreground="#171717"
+                        VerticalAlignment="Center"/>
+
+
+                    <!-- NOVO PEDIDO -->
+
+                    <Button
+                        Grid.Column="1"
+                        Content="NOVO"
+                        Height="34"
+                        Background="#171717"
+                        Foreground="#FFC400"
+                        FontWeight="Bold"
+                        CornerRadius="5"
+                        Command="{Binding NovoPedidoCommand}"/>
+
+
+                    <!-- PESQUISA DO PEDIDO -->
+
+                    <AutoCompleteBox
+                        x:Name="txtPedido"
+                        Grid.Column="2"
+                        ItemsSource="{Binding Pedidos}"
+                        SelectedItem="{Binding PedidoSelecionado}"
+                        ValueMemberBinding="{Binding NumeroPedido}"
+                        MinimumPrefixLength="0"
+                        FilterMode="Contains"
+                        IsTextCompletionEnabled="True"
+                        PlaceholderText="Digite o número do pedido...">
+
+                        <AutoCompleteBox.ItemTemplate>
+
+                            <DataTemplate x:DataType="models:Pedido">
+
+                                <Grid
+                                    ColumnDefinitions="70,*,90"
+                                    ColumnSpacing="10">
+
+                                    <TextBlock
+                                        Grid.Column="0"
+                                        Text="{Binding NumeroPedido}"
+                                        FontWeight="Bold"
+                                        Foreground="#171717"/>
+
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Text="{Binding Data}"
+                                        Foreground="#777777"/>
+
+                                    <TextBlock
+                                        Grid.Column="2"
+                                        Text="{Binding SubTotal}"
+                                        HorizontalAlignment="Right"
+                                        FontWeight="SemiBold"
+                                        Foreground="#171717"/>
+
+                                </Grid>
+
+                            </DataTemplate>
+
+                        </AutoCompleteBox.ItemTemplate>
+
+                    </AutoCompleteBox>
+
+
+                    <!-- ALTERAR -->
+
+                    <Button
+                        Grid.Column="3"
+                        Content="ALTERAR"
+                        Height="34"
+                        Background="#FFC400"
+                        Foreground="#171717"
+                        FontWeight="Bold"
+                        CornerRadius="5"
+                        Command="{Binding AlterarPedidoCommand}"/>
+
+
+                    <!-- CANCELAR -->
+
+                    <Button
+                        Grid.Column="4"
+                        Content="CANCELAR"
+                        Height="34"
+                        Background="#D32F2F"
+                        Foreground="White"
+                        FontWeight="Bold"
+                        CornerRadius="5"
+                        Command="{Binding CancelarPedidoCommand}"/>
+
+
+                    <!-- ESPAÇO -->
+
+                    <Grid Grid.Column="5"/>
+
+
+                    <!-- STATUS -->
+
+                    <Border
+                        Grid.Column="6"
+                        Background="{Binding CorStatusPedido}"
+                        BorderBrush="{Binding CorStatusPedido}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="16,7"
+                        MinWidth="120"
+                        VerticalAlignment="Center">
+
+                        <TextBlock
+                            Text="{Binding StatusPedido}"
+                            Foreground="White"
+                            FontSize="12"
+                            FontWeight="Bold"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>
+
+                    </Border>
+
+                </Grid>
+
+            </Border>
+
+
+            <!-- ================================================= -->
+            <!-- ÁREA PRINCIPAL                                    -->
             <!-- ================================================= -->
 
             <Grid
-                Grid.Column="0"
-                RowDefinitions="Auto,Auto,*,Auto"
-                RowSpacing="12">
+                Grid.Row="1"
+                ColumnDefinitions="1.35*,1*"
+                ColumnSpacing="14">
 
 
-                <!-- ============================================= -->
-                <!-- CLIENTE                                       -->
-                <!-- ============================================= -->
+                <!-- ================================================= -->
+                <!-- COLUNA ESQUERDA                                   -->
+                <!-- ================================================= -->
 
-                <Border
-                    Grid.Row="0"
-                    Background="White"
-                    BorderBrush="#DDDDDD"
-                    BorderThickness="1"
-                    CornerRadius="9"
-                    Padding="16">
+                <Grid
+                    Grid.Column="0"
+                    RowDefinitions="Auto,Auto,*,Auto"
+                    RowSpacing="12">
 
-                    <StackPanel Spacing="9">
 
-                        <TextBlock
-                            Text="Cliente"
-                            FontSize="16"
-                            FontWeight="Bold"
-                            Foreground="#171717"/>
+                    <!-- ============================================= -->
+                    <!-- CLIENTE                                       -->
+                    <!-- ============================================= -->
 
-                        <Grid
-                            ColumnDefinitions="*,46"
-                            ColumnSpacing="8">
+                    <Border
+                        Grid.Row="0"
+                        Background="White"
+                        BorderBrush="#DDDDDD"
+                        BorderThickness="1"
+                        CornerRadius="9"
+                        Padding="16">
 
-                            <AutoCompleteBox
-                                Grid.Column="0"
-                                ItemsSource="{Binding Clientes}"
-                                SelectedItem="{Binding ClienteSelecionado}"
-                                ValueMemberBinding="{Binding Nome}"
-                                MinimumPrefixLength="0"
-                                FilterMode="Contains"
-                                IsTextCompletionEnabled="True"
-                                PlaceholderText="Digite o nome do cliente...">
+                        <StackPanel Spacing="9">
 
-                                <AutoCompleteBox.ItemTemplate>
-
-                                    <DataTemplate x:DataType="models:Cliente">
-
-                                        <StackPanel
-                                            Orientation="Horizontal"
-                                            Spacing="8">
-
-                                            <TextBlock
-                                                Text="{Binding Id}"
-                                                Foreground="#888888"/>
-
-                                            <TextBlock
-                                                Text="{Binding Nome}"
-                                                FontWeight="SemiBold"
-                                                Foreground="#171717"/>
-
-                                        </StackPanel>
-
-                                    </DataTemplate>
-
-                                </AutoCompleteBox.ItemTemplate>
-
-                            </AutoCompleteBox>
-
-                            <Button
-                                Grid.Column="1"
-                                Content="+"
-                                Background="#FFC400"
-                                Foreground="#171717"
-                                FontSize="21"
+                            <TextBlock
+                                Text="Cliente"
+                                FontSize="16"
                                 FontWeight="Bold"
-                                CornerRadius="5"/>
-
-                        </Grid>
-
-                    </StackPanel>
-
-                </Border>
+                                Foreground="#171717"/>
 
 
-                <!-- ============================================= -->
-                <!-- PRODUTO                                       -->
-                <!-- ============================================= -->
+                            <Grid
+                                ColumnDefinitions="*,46"
+                                ColumnSpacing="8">
 
-                <Border
-                    Grid.Row="1"
-                    Background="White"
-                    BorderBrush="#DDDDDD"
-                    BorderThickness="1"
-                    CornerRadius="9"
-                    Padding="16">
-
-                    <StackPanel Spacing="11">
-
-                        <TextBlock
-                            Text="Produto"
-                            FontSize="16"
-                            FontWeight="Bold"
-                            Foreground="#171717"/>
-
-
-                        <!-- CÓDIGO + MERCADORIA -->
-
-                        <Grid
-                            ColumnDefinitions="170,*"
-                            ColumnSpacing="10">
-
-                            <!-- CÓDIGO -->
-
-                            <StackPanel
-                                Grid.Column="0"
-                                Spacing="4">
-
-                                <TextBlock
-                                    Text="Código / Cód. Barras"
-                                    FontSize="11"
-                                    Foreground="#555555"/>
 
                                 <AutoCompleteBox
-                                    x:Name="txtCodigo"
-                                    Text="{Binding Codigo}"
-                                    ItemsSource="{Binding Produtos}"
-                                    SelectedItem="{Binding ProdutoSelecionado}"
-                                    ValueMemberBinding="{Binding Codigo}"
+                                    Grid.Column="0"
+                                    ItemsSource="{Binding Clientes}"
+                                    SelectedItem="{Binding ClienteSelecionado}"
+                                    ValueMemberBinding="{Binding Nome}"
                                     MinimumPrefixLength="0"
                                     FilterMode="Contains"
                                     IsTextCompletionEnabled="True"
-                                    PlaceholderText="Digite o código..."
-                                    KeyDown="Codigo_KeyDown"
-                                    TabIndex="1">
+                                    IsEnabled="{Binding PodeEditar}"
+                                    PlaceholderText="Digite o nome do cliente...">
 
                                     <AutoCompleteBox.ItemTemplate>
 
-                                        <DataTemplate x:DataType="models:Produto">
+                                        <DataTemplate x:DataType="models:Cliente">
 
-                                            <Grid
-                                                ColumnDefinitions="55,*"
-                                                ColumnSpacing="8">
+                                            <StackPanel
+                                                Orientation="Horizontal"
+                                                Spacing="8">
 
                                                 <TextBlock
-                                                    Text="{Binding Codigo}"
-                                                    FontWeight="Bold"
+                                                    Text="{Binding Id}"
+                                                    Foreground="#888888"/>
+
+                                                <TextBlock
+                                                    Text="{Binding Nome}"
+                                                    FontWeight="SemiBold"
                                                     Foreground="#171717"/>
 
-                                                <TextBlock
-                                                    Grid.Column="1"
-                                                    Text="{Binding Descricao}"
-                                                    Foreground="#555555"/>
-
-                                            </Grid>
+                                            </StackPanel>
 
                                         </DataTemplate>
 
@@ -290,38 +362,197 @@
 
                                 </AutoCompleteBox>
 
-                            </StackPanel>
+
+                                <Button
+                                    Grid.Column="1"
+                                    Content="+"
+                                    Background="#FFC400"
+                                    Foreground="#171717"
+                                    FontSize="21"
+                                    FontWeight="Bold"
+                                    CornerRadius="5"
+                                    IsEnabled="{Binding PodeEditar}"/>
+
+                            </Grid>
+
+                        </StackPanel>
+
+                    </Border>
 
 
-                            <!-- MERCADORIA -->
+                    <!-- ============================================= -->
+                    <!-- PRODUTO                                       -->
+                    <!-- ============================================= -->
 
-                            <StackPanel
-                                Grid.Column="1"
-                                Spacing="4">
+                    <Border
+                        Grid.Row="1"
+                        Background="White"
+                        BorderBrush="#DDDDDD"
+                        BorderThickness="1"
+                        CornerRadius="9"
+                        Padding="16">
+
+                        <StackPanel Spacing="11">
+
+                            <TextBlock
+                                Text="Produto"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="#171717"/>
+
+
+                            <!-- ===================================== -->
+                            <!-- CÓDIGO + MERCADORIA                   -->
+                            <!-- ===================================== -->
+
+                            <Grid
+                                ColumnDefinitions="170,*"
+                                ColumnSpacing="10">
+
+
+                                <!-- CÓDIGO -->
+
+                                <StackPanel
+                                    Grid.Column="0"
+                                    Spacing="4">
+
+                                    <TextBlock
+                                        Text="Código / Cód. Barras"
+                                        FontSize="11"
+                                        Foreground="#555555"/>
+
+                                    <AutoCompleteBox
+                                        x:Name="txtCodigo"
+                                        Text="{Binding Codigo}"
+                                        ItemsSource="{Binding Produtos}"
+                                        SelectedItem="{Binding ProdutoSelecionado}"
+                                        ValueMemberBinding="{Binding Codigo}"
+                                        MinimumPrefixLength="0"
+                                        FilterMode="Contains"
+                                        IsTextCompletionEnabled="True"
+                                        IsEnabled="{Binding PodeEditar}"
+                                        PlaceholderText="Digite o código..."
+                                        KeyDown="Codigo_KeyDown"
+                                        TabIndex="1">
+
+                                        <AutoCompleteBox.ItemTemplate>
+
+                                            <DataTemplate x:DataType="models:Produto">
+
+                                                <Grid
+                                                    ColumnDefinitions="55,*"
+                                                    ColumnSpacing="8">
+
+                                                    <TextBlock
+                                                        Text="{Binding Codigo}"
+                                                        FontWeight="Bold"
+                                                        Foreground="#171717"/>
+
+                                                    <TextBlock
+                                                        Grid.Column="1"
+                                                        Text="{Binding Descricao}"
+                                                        Foreground="#555555"/>
+
+                                                </Grid>
+
+                                            </DataTemplate>
+
+                                        </AutoCompleteBox.ItemTemplate>
+
+                                    </AutoCompleteBox>
+
+                                </StackPanel>
+
+
+                                <!-- MERCADORIA -->
+
+                                <StackPanel
+                                    Grid.Column="1"
+                                    Spacing="4">
+
+                                    <TextBlock
+                                        Text="Mercadoria"
+                                        FontSize="11"
+                                        Foreground="#555555"/>
+
+                                    <AutoCompleteBox
+                                        x:Name="txtMercadoria"
+                                        ItemsSource="{Binding Produtos}"
+                                        SelectedItem="{Binding ProdutoSelecionado}"
+                                        ValueMemberBinding="{Binding Descricao}"
+                                        MinimumPrefixLength="0"
+                                        FilterMode="Contains"
+                                        IsTextCompletionEnabled="True"
+                                        IsEnabled="{Binding PodeEditar}"
+                                        PlaceholderText="Digite ou selecione a mercadoria..."
+                                        TabIndex="2">
+
+                                        <AutoCompleteBox.ItemTemplate>
+
+                                            <DataTemplate x:DataType="models:Produto">
+
+                                                <Grid
+                                                    ColumnDefinitions="60,*,Auto"
+                                                    ColumnSpacing="10">
+
+                                                    <TextBlock
+                                                        Text="{Binding Codigo}"
+                                                        Foreground="#777777"/>
+
+                                                    <TextBlock
+                                                        Grid.Column="1"
+                                                        Text="{Binding Descricao}"
+                                                        FontWeight="SemiBold"/>
+
+                                                    <TextBlock
+                                                        Grid.Column="2"
+                                                        Text="{Binding Valor}"
+                                                        Foreground="#777777"/>
+
+                                                </Grid>
+
+                                            </DataTemplate>
+
+                                        </AutoCompleteBox.ItemTemplate>
+
+                                    </AutoCompleteBox>
+
+                                </StackPanel>
+
+                            </Grid>
+
+
+                            <!-- ===================================== -->
+                            <!-- DESCRIÇÃO                             -->
+                            <!-- ===================================== -->
+
+                            <StackPanel Spacing="4">
 
                                 <TextBlock
-                                    Text="Mercadoria"
+                                    Text="Descrição / Pesquisa"
                                     FontSize="11"
                                     Foreground="#555555"/>
 
                                 <AutoCompleteBox
-                                    x:Name="txtMercadoria"
+                                    x:Name="txtDescricao"
+                                    Text="{Binding Descricao}"
                                     ItemsSource="{Binding Produtos}"
                                     SelectedItem="{Binding ProdutoSelecionado}"
                                     ValueMemberBinding="{Binding Descricao}"
-                                    MinimumPrefixLength="0"
+                                    MinimumPrefixLength="1"
                                     FilterMode="Contains"
                                     IsTextCompletionEnabled="True"
-                                    PlaceholderText="Digite ou selecione a mercadoria..."
-                                    TabIndex="2">
+                                    IsEnabled="{Binding PodeEditar}"
+                                    PlaceholderText="Digite parte do nome do produto..."
+                                    TabIndex="3">
 
                                     <AutoCompleteBox.ItemTemplate>
 
                                         <DataTemplate x:DataType="models:Produto">
 
                                             <Grid
-                                                ColumnDefinitions="60,*,Auto"
-                                                ColumnSpacing="10">
+                                                ColumnDefinitions="60,*,100"
+                                                ColumnSpacing="8">
 
                                                 <TextBlock
                                                     Text="{Binding Codigo}"
@@ -335,7 +566,7 @@
                                                 <TextBlock
                                                     Grid.Column="2"
                                                     Text="{Binding Valor}"
-                                                    Foreground="#777777"/>
+                                                    HorizontalAlignment="Right"/>
 
                                             </Grid>
 
@@ -347,475 +578,225 @@
 
                             </StackPanel>
 
-                        </Grid>
+
+                            <!-- ===================================== -->
+                            <!-- QUANTIDADE / PREÇO                    -->
+                            <!-- ===================================== -->
+
+                            <Grid
+                                ColumnDefinitions="120,140,*,120"
+                                ColumnSpacing="10">
 
 
-                        <!-- ===================================== -->
-                        <!-- DESCRIÇÃO                             -->
-                        <!-- ===================================== -->
+                                <!-- QUANTIDADE -->
 
-                        <StackPanel Spacing="4">
+                                <StackPanel
+                                    Grid.Column="0"
+                                    Spacing="4">
 
-                            <TextBlock
-                                Text="Descrição / Pesquisa"
-                                FontSize="11"
-                                Foreground="#555555"/>
+                                    <TextBlock
+                                        Text="Quantidade"
+                                        FontSize="11"
+                                        Foreground="#555555"/>
 
-                            <AutoCompleteBox
-                                x:Name="txtDescricao"
-                                Text="{Binding Descricao}"
-                                ItemsSource="{Binding Produtos}"
-                                SelectedItem="{Binding ProdutoSelecionado}"
-                                ValueMemberBinding="{Binding Descricao}"
-                                MinimumPrefixLength="1"
-                                FilterMode="Contains"
-                                IsTextCompletionEnabled="True"
-                                PlaceholderText="Digite parte do nome do produto..."
-                                TabIndex="3">
+                                    <TextBox
+                                        x:Name="txtQuantidade"
+                                        Text="{Binding Quantidade}"
+                                        IsEnabled="{Binding PodeEditar}"
+                                        KeyDown="Decimal_KeyDown"
+                                        TabIndex="4"/>
 
-                                <AutoCompleteBox.ItemTemplate>
+                                </StackPanel>
 
-                                    <DataTemplate x:DataType="models:Produto">
 
-                                        <Grid
-                                            ColumnDefinitions="60,*,100"
-                                            ColumnSpacing="8">
+                                <!-- PREÇO UNITÁRIO -->
 
-                                            <TextBlock
-                                                Text="{Binding Codigo}"
-                                                Foreground="#777777"/>
+                                <StackPanel
+                                    Grid.Column="1"
+                                    Spacing="4">
 
-                                            <TextBlock
-                                                Grid.Column="1"
-                                                Text="{Binding Descricao}"
-                                                FontWeight="SemiBold"/>
+                                    <TextBlock
+                                        Text="Preço Unit."
+                                        FontSize="11"
+                                        Foreground="#555555"/>
 
-                                            <TextBlock
-                                                Grid.Column="2"
-                                                Text="{Binding Valor}"
-                                                HorizontalAlignment="Right"/>
+                                    <TextBox
+                                        Text="{Binding Valor}"
+                                        IsReadOnly="True"/>
 
-                                        </Grid>
+                                </StackPanel>
 
-                                    </DataTemplate>
 
-                                </AutoCompleteBox.ItemTemplate>
+                                <!-- VALOR SELECIONADO -->
 
-                            </AutoCompleteBox>
+                                <StackPanel
+                                    Grid.Column="2"
+                                    Spacing="4">
+
+                                    <TextBlock
+                                        Text="Valor Unitário Selecionado"
+                                        FontSize="11"
+                                        Foreground="#555555"/>
+
+                                    <Border
+                                        Height="34"
+                                        Background="#FFF8D6"
+                                        BorderBrush="#FFC400"
+                                        BorderThickness="1"
+                                        CornerRadius="4"
+                                        Padding="10,0">
+
+                                        <TextBlock
+                                            Text="{Binding Valor}"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Right"
+                                            FontSize="15"
+                                            FontWeight="Bold"
+                                            Foreground="#171717"/>
+
+                                    </Border>
+
+                                </StackPanel>
+
+
+                                <!-- INSERIR -->
+
+                                <Button
+                                    x:Name="btnAdicionar"
+                                    Grid.Column="3"
+                                    Content="INSERIR"
+                                    Height="34"
+                                    VerticalAlignment="Bottom"
+                                    Background="#FFC400"
+                                    Foreground="#171717"
+                                    FontWeight="Bold"
+                                    CornerRadius="5"
+                                    TabIndex="5"
+                                    IsEnabled="{Binding PodeEditar}"
+                                    Command="{Binding AdicionarItemCommand}"/>
+
+                            </Grid>
 
                         </StackPanel>
 
+                    </Border>
 
-                        <!-- ===================================== -->
-                        <!-- QUANTIDADE / PREÇO                    -->
-                        <!-- ===================================== -->
 
-                        <Grid
-                            ColumnDefinitions="120,140,*,120"
-                            ColumnSpacing="10">
+                    <!-- ESPAÇO -->
 
-                            <!-- QUANTIDADE -->
+                    <Grid Grid.Row="2"/>
 
-                            <StackPanel
-                                Grid.Column="0"
-                                Spacing="4">
 
-                                <TextBlock
-                                    Text="Quantidade"
-                                    FontSize="11"
-                                    Foreground="#555555"/>
-
-                                <TextBox
-                                    x:Name="txtQuantidade"
-                                    Text="{Binding Quantidade}"
-                                    KeyDown="Decimal_KeyDown"
-                                    TabIndex="4"/>
-
-                            </StackPanel>
-
-
-                            <!-- PREÇO UNITÁRIO -->
-
-                            <StackPanel
-                                Grid.Column="1"
-                                Spacing="4">
-
-                                <TextBlock
-                                    Text="Preço Unit."
-                                    FontSize="11"
-                                    Foreground="#555555"/>
-
-                                <TextBox
-                                    Text="{Binding Valor}"
-                                    IsReadOnly="True"/>
-
-                            </StackPanel>
-
-
-                            <!-- VALOR UNITÁRIO SELECIONADO -->
-
-                            <StackPanel
-                                Grid.Column="2"
-                                Spacing="4">
-
-                                <TextBlock
-                                    Text="Valor Unitário Selecionado"
-                                    FontSize="11"
-                                    Foreground="#555555"/>
-
-                                <Border
-                                    Height="34"
-                                    Background="#FFF8D6"
-                                    BorderBrush="#FFC400"
-                                    BorderThickness="1"
-                                    CornerRadius="4"
-                                    Padding="10,0">
-
-                                    <TextBlock
-                                        Text="{Binding Valor}"
-                                        VerticalAlignment="Center"
-                                        HorizontalAlignment="Right"
-                                        FontSize="15"
-                                        FontWeight="Bold"
-                                        Foreground="#171717"/>
-
-                                </Border>
-
-                            </StackPanel>
-
-
-                            <!-- INSERIR -->
-
-                            <Button
-                                x:Name="btnAdicionar"
-                                Grid.Column="3"
-                                Content="INSERIR"
-                                Height="34"
-                                VerticalAlignment="Bottom"
-                                Background="#FFC400"
-                                Foreground="#171717"
-                                FontWeight="Bold"
-                                CornerRadius="5"
-                                TabIndex="5"
-                                Command="{Binding AdicionarItemCommand}"/>
-
-                        </Grid>
-
-                    </StackPanel>
-
-                </Border>
-
-
-                <!-- ESPAÇO -->
-
-                <Grid Grid.Row="2"/>
-
-
-                <!-- ============================================= -->
-                <!-- PAGAMENTO                                     -->
-                <!-- ============================================= -->
-
-                <Border
-                    Grid.Row="3"
-                    Background="White"
-                    BorderBrush="#DDDDDD"
-                    BorderThickness="1"
-                    CornerRadius="9"
-                    Padding="16">
-
-                    <StackPanel Spacing="9">
-
-                        <TextBlock
-                            Text="Pagamento"
-                            FontSize="16"
-                            FontWeight="Bold"
-                            Foreground="#171717"/>
-
-                        <Grid
-                            ColumnDefinitions="1.3*,*,*,*"
-                            ColumnSpacing="10">
-
-
-                            <!-- FORMA DE PAGAMENTO -->
-
-                            <StackPanel Grid.Column="0">
-
-                                <TextBlock
-                                    Text="Forma de Pagamento"
-                                    FontSize="11"/>
-
-                                <ComboBox SelectedIndex="0">
-                                    <ComboBoxItem Content="Pix"/>
-                                    <ComboBoxItem Content="Cartão de Crédito"/>
-                                    <ComboBoxItem Content="Cartão de Débito"/>
-                                    <ComboBoxItem Content="Espécie"/>
-                                </ComboBox>
-
-                            </StackPanel>
-
-
-                            <!-- VALOR PAGO -->
-
-                            <StackPanel Grid.Column="1">
-
-                                <TextBlock
-                                    Text="Valor Pago"
-                                    FontSize="11"/>
-
-                                <TextBox
-                                    x:Name="txtValorPago"
-                                    Text="{Binding ValorPago}"
-                                    KeyDown="Decimal_KeyDown"/>
-
-                            </StackPanel>
-
-
-                            <!-- DESCONTO -->
-
-                            <StackPanel Grid.Column="2">
-
-                                <TextBlock
-                                    Text="Desconto"
-                                    FontSize="11"/>
-
-                                <TextBox
-                                    Text="{Binding Desconto}"
-                                    KeyDown="Decimal_KeyDown"/>
-
-                            </StackPanel>
-
-
-                            <!-- TROCO -->
-
-                            <StackPanel Grid.Column="3">
-
-                                <TextBlock
-                                    Text="Troco"
-                                    FontSize="11"/>
-
-                                <Border
-                                    Height="34"
-                                    Background="#FFF8D6"
-                                    BorderBrush="#FFC400"
-                                    BorderThickness="1"
-                                    CornerRadius="4">
-
-                                    <TextBlock
-                                        Text="{Binding Troco}"
-                                        HorizontalAlignment="Right"
-                                        VerticalAlignment="Center"
-                                        Margin="10,0"
-                                        FontWeight="Bold"
-                                        FontSize="15"
-                                        Foreground="#171717"/>
-
-                                </Border>
-
-                            </StackPanel>
-
-                        </Grid>
-
-                    </StackPanel>
-
-                </Border>
-
-            </Grid>
-
-
-            <!-- ================================================= -->
-            <!-- COLUNA DIREITA                                    -->
-            <!-- ================================================= -->
-
-            <Border
-                Grid.Column="1"
-                Background="White"
-                BorderBrush="#DDDDDD"
-                BorderThickness="1"
-                CornerRadius="9">
-
-                <Grid RowDefinitions="Auto,*,Auto">
-
-
-                    <!-- CABEÇALHO DOS ITENS -->
-
-                    <Grid
-                        Grid.Row="0"
-                        Margin="14"
-                        ColumnDefinitions="*,Auto">
-
-                        <TextBlock
-                            Text="Itens da Venda"
-                            FontSize="16"
-                            FontWeight="Bold"
-                            Foreground="#171717"
-                            VerticalAlignment="Center"/>
-
-                        <Button
-                            Grid.Column="1"
-                            Content="Remover Item"
-                            Background="#FFC400"
-                            Foreground="#171717"
-                            FontWeight="SemiBold"
-                            Command="{Binding RemoverItemCommand}"/>
-
-                    </Grid>
-
-
-                    <!-- ========================================= -->
-                    <!-- GRID DE ITENS                             -->
-                    <!-- ========================================= -->
-
-                    <DataGrid
-                        Grid.Row="1"
-                        ItemsSource="{Binding Itens}"
-                        SelectedItem="{Binding ItemSelecionado}"
-                        AutoGenerateColumns="False"
-                        BorderThickness="0"
-                        GridLinesVisibility="Horizontal">
-
-                        <DataGrid.Columns>
-
-                            <DataGridTextColumn
-                                Header="Cód."
-                                Binding="{Binding Codigo}"
-                                Width="70"/>
-
-                            <DataGridTextColumn
-                                Header="Descrição"
-                                Binding="{Binding Descricao}"
-                                Width="*"/>
-
-                            <DataGridTextColumn
-                                Header="Qtd"
-                                Binding="{Binding Quantidade}"
-                                Width="65"/>
-
-                            <DataGridTextColumn
-                                Header="Valor"
-                                Binding="{Binding Valor}"
-                                Width="90"/>
-
-                            <DataGridTextColumn
-                                Header="Total"
-                                Binding="{Binding Total}"
-                                Width="100"/>
-
-                        </DataGrid.Columns>
-
-                    </DataGrid>
-
-
-                    <!-- ========================================= -->
-                    <!-- TOTALIZADORES                             -->
-                    <!-- ========================================= -->
+                    <!-- ============================================= -->
+                    <!-- PAGAMENTO                                     -->
+                    <!-- ============================================= -->
 
                     <Border
-                        Grid.Row="2"
+                        Grid.Row="3"
                         Background="White"
-                        BorderBrush="#E2E2E2"
-                        BorderThickness="1,1,1,0"
-                        Padding="18">
+                        BorderBrush="#DDDDDD"
+                        BorderThickness="1"
+                        CornerRadius="9"
+                        Padding="16">
 
-                        <StackPanel Spacing="11">
-
-
-                            <!-- TOTAL -->
-
-                            <Grid ColumnDefinitions="*,Auto">
-
-                                <TextBlock
-                                    Text="TOTAL"
-                                    Foreground="#171717"
-                                    FontWeight="SemiBold"/>
-
-                                <TextBlock
-                                    Grid.Column="1"
-                                    Text="{Binding Total}"
-                                    Foreground="#171717"
-                                    FontSize="16"
-                                    FontWeight="Bold"/>
-
-                            </Grid>
-
-
-                            <!-- DESCONTO -->
-
-                            <Grid ColumnDefinitions="*,Auto">
-
-                                <TextBlock
-                                    Text="DESCONTO"
-                                    Foreground="#D32F2F"
-                                    FontWeight="SemiBold"/>
-
-                                <TextBlock
-                                    Grid.Column="1"
-                                    Text="{Binding Desconto}"
-                                    Foreground="#D32F2F"
-                                    FontSize="16"
-                                    FontWeight="Bold"/>
-
-                            </Grid>
-
-
-                            <Border
-                                Height="1"
-                                Background="#DDDDDD"
-                                Margin="0,3"/>
-
-
-                            <!-- TOTAL DA VENDA -->
-
-                            <Border
-                                Background="#FFF8D6"
-                                BorderBrush="#FFC400"
-                                BorderThickness="1"
-                                CornerRadius="6"
-                                Padding="12">
-
-                                <Grid ColumnDefinitions="*,Auto">
-
-                                    <TextBlock
-                                        Text="TOTAL DA VENDA"
-                                        Foreground="#171717"
-                                        FontSize="18"
-                                        FontWeight="Bold"
-                                        VerticalAlignment="Center"/>
-
-                                    <TextBlock
-                                        Grid.Column="1"
-                                        Text="{Binding SubTotal}"
-                                        Foreground="#171717"
-                                        FontSize="25"
-                                        FontWeight="Bold"
-                                        VerticalAlignment="Center"/>
-
-                                </Grid>
-
-                            </Border>
-
-
-                            <!-- FINALIZAR VENDA -->
-
-                            <Button
-                                Content="FINALIZAR VENDA"
-                                Height="48"
-                                Background="#FFC400"
-                                Foreground="#171717"
-                                FontSize="15"
-                                FontWeight="Bold"
-                                CornerRadius="6"
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Center"
-                                Command="{Binding FinalizarVendaCommand}"/>
-
-
-                            <!-- MENSAGEM -->
+                        <StackPanel Spacing="9">
 
                             <TextBlock
-                                Text="{Binding Mensagem}"
-                                Foreground="#444444"
-                                TextWrapping="Wrap"
-                                HorizontalAlignment="Center"/>
+                                Text="Pagamento"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="#171717"/>
+
+
+                            <Grid
+                                ColumnDefinitions="1.3*,*,*,*"
+                                ColumnSpacing="10">
+
+
+                                <!-- FORMA DE PAGAMENTO -->
+
+                                <StackPanel Grid.Column="0">
+
+                                    <TextBlock
+                                        Text="Forma de Pagamento"
+                                        FontSize="11"/>
+
+                                    <ComboBox
+                                        SelectedIndex="0"
+                                        IsEnabled="{Binding PodeEditar}">
+
+                                        <ComboBoxItem Content="Pix"/>
+                                        <ComboBoxItem Content="Cartão de Crédito"/>
+                                        <ComboBoxItem Content="Cartão de Débito"/>
+                                        <ComboBoxItem Content="Espécie"/>
+
+                                    </ComboBox>
+
+                                </StackPanel>
+
+
+                                <!-- VALOR PAGO -->
+
+                                <StackPanel Grid.Column="1">
+
+                                    <TextBlock
+                                        Text="Valor Pago"
+                                        FontSize="11"/>
+
+                                    <TextBox
+                                        x:Name="txtValorPago"
+                                        Text="{Binding ValorPago}"
+                                        IsEnabled="{Binding PodeEditar}"
+                                        KeyDown="Decimal_KeyDown"/>
+
+                                </StackPanel>
+
+
+                                <!-- DESCONTO -->
+
+                                <StackPanel Grid.Column="2">
+
+                                    <TextBlock
+                                        Text="Desconto"
+                                        FontSize="11"/>
+
+                                    <TextBox
+                                        Text="{Binding Desconto}"
+                                        IsEnabled="{Binding PodeEditar}"
+                                        KeyDown="Decimal_KeyDown"/>
+
+                                </StackPanel>
+
+
+                                <!-- TROCO -->
+
+                                <StackPanel Grid.Column="3">
+
+                                    <TextBlock
+                                        Text="Troco"
+                                        FontSize="11"/>
+
+                                    <Border
+                                        Height="34"
+                                        Background="#FFF8D6"
+                                        BorderBrush="#FFC400"
+                                        BorderThickness="1"
+                                        CornerRadius="4">
+
+                                        <TextBlock
+                                            Text="{Binding Troco}"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            Margin="10,0"
+                                            FontWeight="Bold"
+                                            FontSize="15"
+                                            Foreground="#171717"/>
+
+                                    </Border>
+
+                                </StackPanel>
+
+                            </Grid>
 
                         </StackPanel>
 
@@ -823,7 +804,215 @@
 
                 </Grid>
 
-            </Border>
+
+                <!-- ================================================= -->
+                <!-- COLUNA DIREITA                                    -->
+                <!-- ================================================= -->
+
+                <Border
+                    Grid.Column="1"
+                    Background="White"
+                    BorderBrush="#DDDDDD"
+                    BorderThickness="1"
+                    CornerRadius="9">
+
+                    <Grid RowDefinitions="Auto,*,Auto">
+
+
+                        <!-- ========================================= -->
+                        <!-- CABEÇALHO ITENS                           -->
+                        <!-- ========================================= -->
+
+                        <Grid
+                            Grid.Row="0"
+                            Margin="14"
+                            ColumnDefinitions="*,Auto">
+
+                            <TextBlock
+                                Text="Itens da Venda"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Foreground="#171717"
+                                VerticalAlignment="Center"/>
+
+                            <Button
+                                Grid.Column="1"
+                                Content="Remover Item"
+                                Background="#FFC400"
+                                Foreground="#171717"
+                                FontWeight="SemiBold"
+                                IsEnabled="{Binding PodeEditar}"
+                                Command="{Binding RemoverItemCommand}"/>
+
+                        </Grid>
+
+
+                        <!-- ========================================= -->
+                        <!-- GRID DE ITENS                             -->
+                        <!-- ========================================= -->
+
+                        <DataGrid
+                            Grid.Row="1"
+                            ItemsSource="{Binding Itens}"
+                            SelectedItem="{Binding ItemSelecionado}"
+                            AutoGenerateColumns="False"
+                            BorderThickness="0"
+                            GridLinesVisibility="Horizontal">
+
+                            <DataGrid.Columns>
+
+                                <DataGridTextColumn
+                                    Header="Cód."
+                                    Binding="{Binding Codigo}"
+                                    Width="70"/>
+
+                                <DataGridTextColumn
+                                    Header="Descrição"
+                                    Binding="{Binding Descricao}"
+                                    Width="*"/>
+
+                                <DataGridTextColumn
+                                    Header="Qtd"
+                                    Binding="{Binding Quantidade}"
+                                    Width="65"/>
+
+                                <DataGridTextColumn
+                                    Header="Valor"
+                                    Binding="{Binding Valor}"
+                                    Width="90"/>
+
+                                <DataGridTextColumn
+                                    Header="Total"
+                                    Binding="{Binding Total}"
+                                    Width="100"/>
+
+                            </DataGrid.Columns>
+
+                        </DataGrid>
+
+
+                        <!-- ========================================= -->
+                        <!-- TOTALIZADORES                             -->
+                        <!-- ========================================= -->
+
+                        <Border
+                            Grid.Row="2"
+                            Background="White"
+                            BorderBrush="#E2E2E2"
+                            BorderThickness="1,1,1,0"
+                            Padding="18">
+
+                            <StackPanel Spacing="11">
+
+
+                                <!-- TOTAL -->
+
+                                <Grid ColumnDefinitions="*,Auto">
+
+                                    <TextBlock
+                                        Text="TOTAL"
+                                        Foreground="#171717"
+                                        FontWeight="SemiBold"/>
+
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Text="{Binding Total}"
+                                        Foreground="#171717"
+                                        FontSize="16"
+                                        FontWeight="Bold"/>
+
+                                </Grid>
+
+
+                                <!-- DESCONTO -->
+
+                                <Grid ColumnDefinitions="*,Auto">
+
+                                    <TextBlock
+                                        Text="DESCONTO"
+                                        Foreground="#D32F2F"
+                                        FontWeight="SemiBold"/>
+
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Text="{Binding Desconto}"
+                                        Foreground="#D32F2F"
+                                        FontSize="16"
+                                        FontWeight="Bold"/>
+
+                                </Grid>
+
+
+                                <Border
+                                    Height="1"
+                                    Background="#DDDDDD"
+                                    Margin="0,3"/>
+
+
+                                <!-- TOTAL DA VENDA -->
+
+                                <Border
+                                    Background="#FFF8D6"
+                                    BorderBrush="#FFC400"
+                                    BorderThickness="1"
+                                    CornerRadius="6"
+                                    Padding="12">
+
+                                    <Grid ColumnDefinitions="*,Auto">
+
+                                        <TextBlock
+                                            Text="TOTAL DA VENDA"
+                                            Foreground="#171717"
+                                            FontSize="18"
+                                            FontWeight="Bold"
+                                            VerticalAlignment="Center"/>
+
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Text="{Binding SubTotal}"
+                                            Foreground="#171717"
+                                            FontSize="25"
+                                            FontWeight="Bold"
+                                            VerticalAlignment="Center"/>
+
+                                    </Grid>
+
+                                </Border>
+
+
+                                <!-- FINALIZAR -->
+
+                                <Button
+                                    Content="FINALIZAR VENDA"
+                                    Height="48"
+                                    Background="#FFC400"
+                                    Foreground="#171717"
+                                    FontSize="15"
+                                    FontWeight="Bold"
+                                    CornerRadius="6"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Center"
+                                    IsEnabled="{Binding PodeEditar}"
+                                    Command="{Binding FinalizarVendaCommand}"/>
+
+
+                                <!-- MENSAGEM -->
+
+                                <TextBlock
+                                    Text="{Binding Mensagem}"
+                                    Foreground="#444444"
+                                    TextWrapping="Wrap"
+                                    HorizontalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Border>
+
+                    </Grid>
+
+                </Border>
+
+            </Grid>
 
         </Grid>
 
