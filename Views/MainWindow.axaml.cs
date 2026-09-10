@@ -1,6 +1,6 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia;
 using Avalonia.Styling;
 
 namespace CursoAvalonia.Views;
@@ -12,9 +12,26 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         btnAdicionar.Click += Adicionar_Click;
+
+        txtCodigo.SelectionChanged += Produto_SelectionChanged;
+        txtMercadoria.SelectionChanged += Produto_SelectionChanged;
+        txtDescricao.SelectionChanged += Produto_SelectionChanged;
     }
 
-    private void AlternarTema_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private void Produto_SelectionChanged(
+        object? sender,
+        SelectionChangedEventArgs e)
+    {
+        if (e.AddedItems.Count == 0)
+            return;
+
+        txtQuantidade.Focus();
+        txtQuantidade.SelectAll();
+    }
+
+    private void AlternarTema_Click(
+        object? sender,
+        Avalonia.Interactivity.RoutedEventArgs e)
     {
         if (Application.Current is not { } app)
             return;
@@ -75,9 +92,10 @@ public partial class MainWindow : Window
         }
     }
 
-    private void Adicionar_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private void Adicionar_Click(
+        object? sender,
+        Avalonia.Interactivity.RoutedEventArgs e)
     {
         txtCodigo.Focus();
     }
-
 }

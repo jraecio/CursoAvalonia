@@ -23,6 +23,8 @@ public partial class App : Application
             };
         }
 
+        RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Light;
+
         base.OnFrameworkInitializationCompleted();
     }
 }
