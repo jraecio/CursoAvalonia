@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace CursoAvalonia.Models
 {
     public class ItemPedido
-
     {
         public Guid Id { get; set; } = Guid.NewGuid();
 

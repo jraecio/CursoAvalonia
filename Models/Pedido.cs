@@ -5,13 +5,27 @@ namespace CursoAvalonia.Models
 {
     public class Pedido
     {
-        // Chave interna única
+        // =====================================================
+        // IDENTIFICAÇÃO
+        // =====================================================
+
         public Guid Id { get; set; } = Guid.NewGuid();
 
-        // Número visível do pedido
         public int NumeroPedido { get; set; }
 
         public DateTime Data { get; set; } = DateTime.Now;
+
+
+        // =====================================================
+        // CLIENTE
+        // =====================================================
+
+        public int? ClienteId { get; set; }
+
+
+        // =====================================================
+        // TOTAIS
+        // =====================================================
 
         public decimal Total { get; set; }
 
@@ -21,13 +35,22 @@ namespace CursoAvalonia.Models
 
 
         // =====================================================
+        // PAGAMENTO
+        // =====================================================
+
+        public string FormaPagamento { get; set; } = "Pix";
+
+        public decimal ValorPago { get; set; }
+
+        public decimal Troco { get; set; }
+
+
+        // =====================================================
         // STATUS DO PEDIDO
         // =====================================================
 
-        // Ao finalizar a venda, o pedido fica lacrado
         public bool Lacrado { get; set; } = true;
 
-        // Pedido cancelado nunca mais poderá ser editado
         public bool Cancelado { get; set; } = false;
 
 

@@ -98,4 +98,14 @@ public partial class MainWindow : Window
     {
         txtCodigo.Focus();
     }
+
+    private async void Configuracao_Click(
+    object? sender,
+    Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        var janela = new ConfiguracaoWindow();
+
+        await janela.ShowDialog(this);
+    }
+
 }

@@ -1,25 +1,64 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace CursoAvalonia.Models
+namespace CursoAvalonia.Models;
+
+public class ItemVenda : ObservableObject
 {
-    public class ItemVenda
+    private int _codigo;
+
+    public int Codigo
     {
-        public int Codigo { get; set; }
+        get => _codigo;
+        set => SetProperty(ref _codigo, value);
+    }
 
-        public string Descricao { get; set; } = string.Empty;
 
-        public decimal Quantidade { get; set; }
+    private string _descricao = string.Empty;
 
-        public decimal Valor { get; set; }
+    public string Descricao
+    {
+        get => _descricao;
+        set => SetProperty(ref _descricao, value);
+    }
 
-        public decimal Total
+
+    private decimal _quantidade;
+
+    public decimal Quantidade
+    {
+        get => _quantidade;
+
+        set
         {
-            get
+            if (SetProperty(ref _quantidade, value))
             {
-                return Quantidade * Valor;
+                OnPropertyChanged(nameof(Total));
             }
+        }
+    }
+
+
+    private decimal _valor;
+
+    public decimal Valor
+    {
+        get => _valor;
+
+        set
+        {
+            if (SetProperty(ref _valor, value))
+            {
+                OnPropertyChanged(nameof(Total));
+            }
+        }
+    }
+
+
+    public decimal Total
+    {
+        get
+        {
+            return Quantidade * Valor;
         }
     }
 }
