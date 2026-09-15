@@ -511,5 +511,33 @@ public class SoftcomShopApiService
         return await GetAsync(
             routes.Clientes
         );
+
+
     }
+    // =========================================================
+    // CLIENTES - DESSERIALIZADOS
+    // =========================================================
+
+    public async Task<List<ClienteApiDto>> ObterClientesAsync()
+    {
+        string json =
+            await ObterClientesJsonAsync();
+
+        ClientesApiResponseDto? response =
+            JsonSerializer.Deserialize<ClientesApiResponseDto>(
+                json,
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                }
+            );
+
+        if (response == null)
+        {
+            return new List<ClienteApiDto>();
+        }
+
+        return response.Data;
+    }
+
 }

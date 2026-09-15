@@ -7,6 +7,10 @@ namespace CursoAvalonia.Data;
 
 public class LocalDbContext : DbContext
 {
+    // =====================================================
+    // TABELAS
+    // =====================================================
+
     public DbSet<Pedido> Pedidos { get; set; }
 
     public DbSet<ItemPedido> ItensPedido { get; set; }
@@ -15,16 +19,27 @@ public class LocalDbContext : DbContext
 
     public DbSet<Produto> Produtos { get; set; }
 
+    public DbSet<Cliente> Clientes { get; set; }
+
+
+    // =====================================================
+    // CONFIGURAÇÃO SQLITE
+    // =====================================================
 
     protected override void OnConfiguring(
-        DbContextOptionsBuilder optionsBuilder)
+    DbContextOptionsBuilder optionsBuilder)
     {
         string pastaBanco = Path.Combine(
-            AppContext.BaseDirectory,
+            Environment.GetFolderPath(
+                Environment.SpecialFolder.LocalApplicationData
+            ),
+            "CursoAvalonia",
             "Data"
         );
 
-        Directory.CreateDirectory(pastaBanco);
+        Directory.CreateDirectory(
+            pastaBanco
+        );
 
         string caminhoBanco = Path.Combine(
             pastaBanco,
@@ -37,12 +52,19 @@ public class LocalDbContext : DbContext
     }
 
 
+    // =====================================================
+    // CONFIGURAÇÃO DOS MODELOS
+    // =====================================================
+
     protected override void OnModelCreating(
         ModelBuilder modelBuilder)
     {
-        // =====================================================
+        base.OnModelCreating(modelBuilder);
+
+
+        // =================================================
         // PEDIDO / ITENS
-        // =====================================================
+        // =================================================
 
         modelBuilder.Entity<Pedido>()
             .HasMany(p => p.Itens)
@@ -50,9 +72,9 @@ public class LocalDbContext : DbContext
             .HasForeignKey(i => i.PedidoId);
 
 
-        // =====================================================
+        // =================================================
         // LOG AUDITORIA
-        // =====================================================
+        // =================================================
 
         modelBuilder.Entity<LogAuditoria>()
             .HasOne(l => l.Pedido)
@@ -60,18 +82,18 @@ public class LocalDbContext : DbContext
             .HasForeignKey(l => l.PedidoId);
 
 
-        // =====================================================
-        // NÚMERO DO PEDIDO
-        // =====================================================
+        // =================================================
+        // PEDIDO
+        // =================================================
 
         modelBuilder.Entity<Pedido>()
             .HasIndex(p => p.NumeroPedido)
             .IsUnique();
 
 
-        // =====================================================
-        // PRODUTOS
-        // =====================================================
+        // =================================================
+        // PRODUTO
+        // =================================================
 
         modelBuilder.Entity<Produto>()
             .HasKey(p => p.Codigo);
@@ -79,5 +101,29 @@ public class LocalDbContext : DbContext
 
         modelBuilder.Entity<Produto>()
             .HasIndex(p => p.ProdutoEmpresaId);
+
+
+        modelBuilder.Entity<Produto>()
+            .HasIndex(p => p.CodigoBarras);
+
+
+        modelBuilder.Entity<Produto>()
+            .HasIndex(p => p.Descricao);
+
+
+        // =================================================
+        // CLIENTE
+        // =================================================
+
+        modelBuilder.Entity<Cliente>()
+            .HasKey(c => c.Id);
+
+
+        modelBuilder.Entity<Cliente>()
+            .HasIndex(c => c.Nome);
+
+
+        modelBuilder.Entity<Cliente>()
+            .HasIndex(c => c.CPF);
     }
 }

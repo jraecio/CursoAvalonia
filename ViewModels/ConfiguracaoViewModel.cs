@@ -22,6 +22,8 @@ public partial class ConfiguracaoViewModel : ViewModelBase
 
     private readonly ConfiguracaoService _configuracaoService = new();
 
+    private readonly SincronizacaoService _sincronizacaoService = new();
+
 
     // =========================================================
     // CONSTRUTOR
@@ -827,26 +829,9 @@ public partial class ConfiguracaoViewModel : ViewModelBase
                 "#F59E0B";
 
 
-            string json =
+            var clientes =
                 await _apiService
-                    .ObterClientesJsonAsync();
-
-
-            if (string.IsNullOrWhiteSpace(
-                json))
-            {
-                StatusApi =
-                    "SEM RETORNO";
-
-                CorStatusApi =
-                    "#F59E0B";
-
-
-                Mensagem =
-                    "A API respondeu, mas não retornou clientes.";
-
-                return;
-            }
+                    .ObterClientesAsync();
 
 
             StatusApi =
@@ -856,17 +841,22 @@ public partial class ConfiguracaoViewModel : ViewModelBase
                 "#16A34A";
 
 
-            const int limite =
-                5000;
+            if (clientes.Count == 0)
+            {
+                Mensagem =
+                    "API respondeu corretamente, mas nenhum cliente foi retornado.";
+
+                return;
+            }
+
+
+            var primeiro =
+                clientes[0];
 
 
             Mensagem =
-                json.Length > limite
-                    ? json.Substring(
-                        0,
-                        limite
-                    )
-                    : json;
+                $"Clientes recebidos: {clientes.Count} | " +
+                $"Primeiro cliente: {primeiro.Id} - {primeiro.Nome}";
         }
         catch (Exception ex)
         {
@@ -879,6 +869,64 @@ public partial class ConfiguracaoViewModel : ViewModelBase
 
             Mensagem =
                 "Erro ao buscar clientes: " +
+                ex.Message;
+        }
+    }
+
+
+    // =========================================================
+    // SINCRONIZAR API
+    // =========================================================
+
+    // =========================================================
+    // SINCRONIZAR API
+    // =========================================================
+
+    [RelayCommand]
+    private async Task SincronizarApiAsync()
+    {
+        try
+        {
+            Mensagem = string.Empty;
+
+            StatusApi =
+                "SINCRONIZANDO...";
+
+            CorStatusApi =
+                "#F59E0B";
+
+
+            var resultado =
+                await _sincronizacaoService
+                    .SincronizarTudoAsync();
+
+
+            UltimaSincronizacao =
+                DateTime.Now;
+
+
+            StatusApi =
+                "SINCRONIZAÇÃO OK";
+
+            CorStatusApi =
+                "#16A34A";
+
+
+            Mensagem =
+                $"Produtos sincronizados: {resultado.Produtos} | " +
+                $"Clientes sincronizados: {resultado.Clientes}";
+        }
+        catch (Exception ex)
+        {
+            StatusApi =
+                "ERRO API";
+
+            CorStatusApi =
+                "#DC2626";
+
+
+            Mensagem =
+                "Erro na sincronização: " +
                 ex.Message;
         }
     }
@@ -974,58 +1022,5 @@ public partial class ConfiguracaoViewModel : ViewModelBase
             DeviceId =
                 DeviceId
         };
-    }
-    // =========================================================
-    // SINCRONIZAR API
-    // =========================================================
-
-    [RelayCommand]
-    private async Task SincronizarApiAsync()
-    {
-        try
-        {
-            Mensagem = string.Empty;
-
-            StatusApi =
-                "SINCRONIZANDO...";
-
-            CorStatusApi =
-                "#F59E0B";
-
-
-            var produtos =
-                await _apiService
-                    .ObterProdutosAsync();
-
-
-            string clientesJson =
-                await _apiService
-                    .ObterClientesJsonAsync();
-
-
-            StatusApi =
-                "SINCRONIZAÇÃO OK";
-
-            CorStatusApi =
-                "#16A34A";
-
-
-            Mensagem =
-                $"Produtos recebidos: {produtos.Count} | " +
-                $"Clientes recebidos com sucesso.";
-        }
-        catch (Exception ex)
-        {
-            StatusApi =
-                "ERRO API";
-
-            CorStatusApi =
-                "#DC2626";
-
-
-            Mensagem =
-                "Erro na sincronização: " +
-                ex.Message;
-        }
     }
 }
