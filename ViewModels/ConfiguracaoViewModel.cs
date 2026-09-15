@@ -24,6 +24,8 @@ public partial class ConfiguracaoViewModel : ViewModelBase
 
     private readonly SincronizacaoService _sincronizacaoService = new();
 
+    private readonly RemoteDbContextFactory _remoteDbFactory = new();
+
 
     // =========================================================
     // CONSTRUTOR
@@ -502,6 +504,11 @@ public partial class ConfiguracaoViewModel : ViewModelBase
     // TESTAR BANCO SELECIONADO
     // =========================================================
 
+    
+    // =========================================================
+    // TESTAR BANCO SELECIONADO
+    // =========================================================
+
     [RelayCommand]
     private async Task TestarBancoSelecionadoAsync()
     {
@@ -517,14 +524,77 @@ public partial class ConfiguracaoViewModel : ViewModelBase
             }
 
 
-            bool conectado =
-                await _sqlService
-                    .TestarBancoAsync(
+            StatusSql =
+                "TESTANDO BANCO...";
+
+            CorStatusSql =
+                "#F59E0B";
+
+
+            // =====================================================
+            // SALVAR CONFIGURAÇÃO ATUAL
+            // =====================================================
+
+            ConfiguracaoSistema config =
+                new ConfiguracaoSistema
+                {
+                    BaseUrl =
+                        BaseUrl,
+
+                    ClientId =
+                        ClientId,
+
+                    ClientSecret =
+                        ClientSecret,
+
+                    EmpresaNome =
+                        EmpresaNome,
+
+                    EmpresaCnpj =
+                        EmpresaCnpj,
+
+                    DeviceName =
+                        DeviceName,
+
+                    DeviceId =
+                        DeviceId,
+
+                    Token =
+                        Token,
+
+                    UltimaAutenticacao =
+                        UltimaAutenticacao,
+
+                    SqlServidor =
                         SqlServidor,
+
+                    SqlBanco =
                         BancoSelecionado,
+
+                    SqlUsuario =
                         SqlUsuario,
-                        SqlSenha
-                    );
+
+                    SqlSenha =
+                        SqlSenha,
+
+                    UltimaSincronizacao =
+                        UltimaSincronizacao
+                };
+
+
+            await _configuracaoService
+                .SalvarAsync(
+                    config
+                );
+
+
+            // =====================================================
+            // TESTAR REMOTE DBCONTEXT
+            // =====================================================
+
+            bool conectado =
+                await _remoteDbFactory
+                    .TestarConexaoAsync();
 
 
             if (conectado)
@@ -537,7 +607,19 @@ public partial class ConfiguracaoViewModel : ViewModelBase
 
 
                 Mensagem =
-                    $"Conectado ao banco {BancoSelecionado} com sucesso.";
+                    $"RemoteDbContext conectado ao banco {BancoSelecionado}.";
+            }
+            else
+            {
+                StatusSql =
+                    "SEM CONEXÃO";
+
+                CorStatusSql =
+                    "#DC2626";
+
+
+                Mensagem =
+                    "Não foi possível conectar ao banco SQL Server.";
             }
         }
         catch (Exception ex)
@@ -550,8 +632,8 @@ public partial class ConfiguracaoViewModel : ViewModelBase
 
 
             Mensagem =
-                "Erro ao conectar no banco: " +
-                ex.Message;
+                "Erro no RemoteDbContext: " +
+                (ex.InnerException?.Message ?? ex.Message);
         }
     }
 

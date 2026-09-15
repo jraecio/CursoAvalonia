@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CursoAvalonia.Models;
@@ -99,6 +100,7 @@ public partial class MainViewModel : ViewModelBase
 
     public ObservableCollection<Produto> Produtos { get; } = new();
 
+
     private Produto? _produtoSelecionado;
 
     public Produto? ProdutoSelecionado
@@ -112,9 +114,15 @@ public partial class MainViewModel : ViewModelBase
                 if (value == null)
                     return;
 
-                Codigo = value.Codigo.ToString();
-                Descricao = value.Descricao;
-                Valor = value.Valor.ToString("0.00");
+
+                Codigo =
+                    value.Codigo.ToString();
+
+                Descricao =
+                    value.Descricao;
+
+                Valor =
+                    value.Valor.ToString("0.00");
             }
         }
     }
@@ -126,6 +134,7 @@ public partial class MainViewModel : ViewModelBase
 
     public ObservableCollection<Cliente> Clientes { get; } = new();
 
+
     [ObservableProperty]
     private Cliente? clienteSelecionado;
 
@@ -135,6 +144,7 @@ public partial class MainViewModel : ViewModelBase
     // =========================================================
 
     public ObservableCollection<Pedido> Pedidos { get; } = new();
+
 
     private Pedido? _pedidoSelecionado;
 
@@ -231,69 +241,155 @@ public partial class MainViewModel : ViewModelBase
     // SERVIÇOS
     // =========================================================
 
-    private readonly VendaService _vendaService = new();
+    private readonly VendaService _vendaService =
+        new();
+
+    private readonly DadosLocaisService _dadosLocaisService =
+        new();
+
+    private readonly InicializacaoService _inicializacaoService;
 
 
     // =========================================================
-    // CONSTRUTOR
+    // CONSTRUTOR PADRÃO
     // =========================================================
 
     public MainViewModel()
+        : this(new InicializacaoService())
     {
-        // =====================================================
-        // CLIENTES TEMPORÁRIOS
-        // =====================================================
+    }
 
-        Clientes.Add(new Cliente
-        {
-            Id = 1,
-            Nome = "Aecio"
-        });
 
-        Clientes.Add(new Cliente
-        {
-            Id = 2,
-            Nome = "Softcom"
-        });
+    // =========================================================
+    // CONSTRUTOR COM INICIALIZAÇÃO COMPARTILHADA
+    // =========================================================
 
-        Clientes.Add(new Cliente
-        {
-            Id = 3,
-            Nome = "Barbosa"
-        });
+    public MainViewModel(
+        InicializacaoService inicializacaoService)
+    {
+        _inicializacaoService =
+            inicializacaoService;
 
 
         // =====================================================
-        // PRODUTOS TEMPORÁRIOS
+        // QUANDO A API TERMINAR DE SINCRONIZAR,
+        // RECARREGA PRODUTOS E CLIENTES DO SQLITE
         // =====================================================
 
-        Produtos.Add(new Produto
-        {
-            Codigo = 1,
-            Descricao = "Notebook",
-            Valor = 2200.00m
-        });
-
-        Produtos.Add(new Produto
-        {
-            Codigo = 2,
-            Descricao = "Pelicula Insulfilm",
-            Valor = 350.00m
-        });
-
-        Produtos.Add(new Produto
-        {
-            Codigo = 3,
-            Descricao = "Farol de LED H11",
-            Valor = 150.00m
-        });
+        _inicializacaoService
+            .SincronizacaoConcluida +=
+            InicializacaoService_SincronizacaoConcluida;
 
 
         // =====================================================
-        // CARREGA PEDIDOS DO SQLITE
+        // CARREGAMENTO LOCAL IMEDIATO
         // =====================================================
 
-        _ = CarregarPedidosDoBancoAsync();
+        _ = CarregarDadosIniciaisAsync();
+    }
+
+
+    // =========================================================
+    // SINCRONIZAÇÃO CONCLUÍDA
+    // =========================================================
+
+    private async void
+        InicializacaoService_SincronizacaoConcluida(
+            object? sender,
+            EventArgs e)
+    {
+        try
+        {
+            // ObservableCollection deve ser atualizada
+            // na thread da interface.
+
+            await Dispatcher.UIThread.InvokeAsync(
+                async () =>
+                {
+                    await CarregarProdutosDoBancoAsync();
+
+                    await CarregarClientesDoBancoAsync();
+
+                    Mensagem =
+                        "Produtos e clientes atualizados.";
+                }
+            );
+        }
+        catch (Exception ex)
+        {
+            Mensagem =
+                "Erro ao atualizar dados após sincronização: " +
+                (ex.InnerException?.Message ?? ex.Message);
+        }
+    }
+
+
+    // =========================================================
+    // CARREGAR DADOS INICIAIS
+    // =========================================================
+
+    private async Task CarregarDadosIniciaisAsync()
+    {
+        try
+        {
+            await CarregarProdutosDoBancoAsync();
+
+            await CarregarClientesDoBancoAsync();
+
+            await CarregarPedidosDoBancoAsync();
+        }
+        catch (Exception ex)
+        {
+            Mensagem =
+                "Erro ao carregar dados locais: " +
+                (ex.InnerException?.Message ?? ex.Message);
+        }
+    }
+
+
+    // =========================================================
+    // CARREGAR PRODUTOS DO SQLITE
+    // =========================================================
+
+    private async Task CarregarProdutosDoBancoAsync()
+    {
+        var produtosBanco =
+            await _dadosLocaisService
+                .ListarProdutosAsync();
+
+
+        Produtos.Clear();
+
+
+        foreach (Produto produto in produtosBanco)
+        {
+            Produtos.Add(
+                produto
+            );
+        }
+    }
+
+
+    // =========================================================
+    // CARREGAR CLIENTES DO SQLITE
+    // =========================================================
+
+    private async Task CarregarClientesDoBancoAsync()
+    {
+        var clientesBanco =
+            await _dadosLocaisService
+                .ListarClientesAsync();
+
+
+        Clientes.Clear();
+
+
+        foreach (Cliente cliente in clientesBanco)
+        {
+            Clientes.Add(
+                cliente
+            );
+        }
     }
 
 
@@ -306,13 +402,18 @@ public partial class MainViewModel : ViewModelBase
         try
         {
             var pedidosBanco =
-                await _vendaService.ListarPedidosAsync();
+                await _vendaService
+                    .ListarPedidosAsync();
+
 
             Pedidos.Clear();
 
+
             foreach (Pedido pedido in pedidosBanco)
             {
-                Pedidos.Add(pedido);
+                Pedidos.Add(
+                    pedido
+                );
             }
         }
         catch (Exception ex)
@@ -331,35 +432,73 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private void NovoPedido()
     {
-        PedidoSelecionado = null;
+        PedidoSelecionado =
+            null;
+
 
         LimparItensVenda();
 
-        ClienteSelecionado = null;
 
-        ProdutoSelecionado = null;
-        ItemSelecionado = null;
+        ClienteSelecionado =
+            null;
 
-        Codigo = string.Empty;
-        Descricao = string.Empty;
-        Quantidade = "1";
-        Valor = string.Empty;
+        ProdutoSelecionado =
+            null;
 
-        Total = 0;
-        SubTotal = 0;
-        Desconto = string.Empty;
+        ItemSelecionado =
+            null;
 
-        FormaPagamento = "Pix";
-        ValorPago = string.Empty;
-        Troco = 0;
 
-        PodeEditar = true;
-        EmAlteracao = false;
+        Codigo =
+            string.Empty;
 
-        StatusPedido = "NOVO PEDIDO";
-        CorStatusPedido = "#2563EB";
+        Descricao =
+            string.Empty;
 
-        Mensagem = "Nova venda iniciada.";
+        Quantidade =
+            "1";
+
+        Valor =
+            string.Empty;
+
+
+        Total =
+            0;
+
+        SubTotal =
+            0;
+
+        Desconto =
+            string.Empty;
+
+
+        FormaPagamento =
+            "Pix";
+
+        ValorPago =
+            string.Empty;
+
+        Troco =
+            0;
+
+
+        PodeEditar =
+            true;
+
+        EmAlteracao =
+            false;
+
+
+        StatusPedido =
+            "NOVO PEDIDO";
+
+        CorStatusPedido =
+            "#2563EB";
+
+
+        Mensagem =
+            "Nova venda iniciada.";
+
 
         OnPropertyChanged(
             nameof(PodeFinalizarNovaVenda)
@@ -382,18 +521,29 @@ public partial class MainViewModel : ViewModelBase
             return;
         }
 
-        Mensagem = string.Empty;
+
+        Mensagem =
+            string.Empty;
+
 
         try
         {
             int codigoItem =
-                Convert.ToInt32(Codigo);
+                Convert.ToInt32(
+                    Codigo
+                );
+
 
             decimal quantidadeItem =
-                Convert.ToDecimal(Quantidade);
+                Convert.ToDecimal(
+                    Quantidade
+                );
+
 
             decimal valorItem =
-                Convert.ToDecimal(Valor);
+                Convert.ToDecimal(
+                    Valor
+                );
 
 
             // =================================================
@@ -403,7 +553,10 @@ public partial class MainViewModel : ViewModelBase
             if (ItemSelecionado != null)
             {
                 int indice =
-                    Itens.IndexOf(ItemSelecionado);
+                    Itens.IndexOf(
+                        ItemSelecionado
+                    );
+
 
                 if (indice >= 0)
                 {
@@ -414,10 +567,17 @@ public partial class MainViewModel : ViewModelBase
                     ItemVenda itemAtualizado =
                         new ItemVenda
                         {
-                            Codigo = codigoItem,
-                            Descricao = Descricao,
-                            Quantidade = quantidadeItem,
-                            Valor = valorItem
+                            Codigo =
+                                codigoItem,
+
+                            Descricao =
+                                Descricao,
+
+                            Quantidade =
+                                quantidadeItem,
+
+                            Valor =
+                                valorItem
                         };
 
 
@@ -435,17 +595,24 @@ public partial class MainViewModel : ViewModelBase
             }
             else
             {
-                // =================================================
+                // =============================================
                 // NOVO ITEM
-                // =================================================
+                // =============================================
 
                 ItemVenda item =
                     new ItemVenda
                     {
-                        Codigo = codigoItem,
-                        Descricao = Descricao,
-                        Quantidade = quantidadeItem,
-                        Valor = valorItem
+                        Codigo =
+                            codigoItem,
+
+                        Descricao =
+                            Descricao,
+
+                        Quantidade =
+                            quantidadeItem,
+
+                        Valor =
+                            valorItem
                     };
 
 
@@ -453,7 +620,9 @@ public partial class MainViewModel : ViewModelBase
                     Item_PropertyChanged;
 
 
-                Itens.Add(item);
+                Itens.Add(
+                    item
+                );
             }
 
 
@@ -464,14 +633,23 @@ public partial class MainViewModel : ViewModelBase
             // LIMPA CAMPOS
             // =================================================
 
-            ItemSelecionado = null;
+            ItemSelecionado =
+                null;
 
-            Codigo = string.Empty;
-            Descricao = string.Empty;
-            Quantidade = "1";
-            Valor = string.Empty;
+            Codigo =
+                string.Empty;
 
-            ProdutoSelecionado = null;
+            Descricao =
+                string.Empty;
+
+            Quantidade =
+                "1";
+
+            Valor =
+                string.Empty;
+
+            ProdutoSelecionado =
+                null;
         }
         catch
         {
@@ -489,9 +667,12 @@ public partial class MainViewModel : ViewModelBase
         object? sender,
         PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(ItemVenda.Quantidade) ||
-            e.PropertyName == nameof(ItemVenda.Valor) ||
-            e.PropertyName == nameof(ItemVenda.Total))
+        if (e.PropertyName ==
+                nameof(ItemVenda.Quantidade) ||
+            e.PropertyName ==
+                nameof(ItemVenda.Valor) ||
+            e.PropertyName ==
+                nameof(ItemVenda.Total))
         {
             RecalcularTotalVenda();
         }
@@ -505,7 +686,10 @@ public partial class MainViewModel : ViewModelBase
     private void RecalcularTotalVenda()
     {
         Total =
-            Itens.Sum(x => x.Total);
+            Itens.Sum(
+                x => x.Total
+            );
+
 
         AtualizarSubTotal();
     }
@@ -522,6 +706,7 @@ public partial class MainViewModel : ViewModelBase
             item.PropertyChanged -=
                 Item_PropertyChanged;
         }
+
 
         Itens.Clear();
     }
@@ -556,7 +741,8 @@ public partial class MainViewModel : ViewModelBase
         );
 
 
-        ItemSelecionado = null;
+        ItemSelecionado =
+            null;
 
 
         RecalcularTotalVenda();
@@ -588,9 +774,12 @@ public partial class MainViewModel : ViewModelBase
         }
 
 
-        PodeEditar = true;
+        PodeEditar =
+            true;
 
-        EmAlteracao = true;
+
+        EmAlteracao =
+            true;
 
 
         AtualizarStatusPedido();
@@ -646,14 +835,12 @@ public partial class MainViewModel : ViewModelBase
 
         try
         {
-            // =================================================
-            // DESCONTO
-            // =================================================
-
-            decimal valorDesconto = 0;
+            decimal valorDesconto =
+                0;
 
 
-            if (!string.IsNullOrWhiteSpace(Desconto))
+            if (!string.IsNullOrWhiteSpace(
+                Desconto))
             {
                 decimal.TryParse(
                     Desconto,
@@ -662,14 +849,12 @@ public partial class MainViewModel : ViewModelBase
             }
 
 
-            // =================================================
-            // VALOR PAGO
-            // =================================================
-
-            decimal valorPagoDecimal = 0;
+            decimal valorPagoDecimal =
+                0;
 
 
-            if (!string.IsNullOrWhiteSpace(ValorPago))
+            if (!string.IsNullOrWhiteSpace(
+                ValorPago))
             {
                 decimal.TryParse(
                     ValorPago,
@@ -678,38 +863,37 @@ public partial class MainViewModel : ViewModelBase
             }
 
 
-            // =================================================
-            // DADOS DO PEDIDO
-            // =================================================
-
             PedidoSelecionado.ClienteId =
                 ClienteSelecionado?.Id;
+
 
             PedidoSelecionado.Total =
                 Total;
 
+
             PedidoSelecionado.Desconto =
                 valorDesconto;
+
 
             PedidoSelecionado.SubTotal =
                 SubTotal;
 
+
             PedidoSelecionado.FormaPagamento =
                 FormaPagamento;
+
 
             PedidoSelecionado.ValorPago =
                 valorPagoDecimal;
 
+
             PedidoSelecionado.Troco =
                 Troco;
+
 
             PedidoSelecionado.Sincronizado =
                 false;
 
-
-            // =================================================
-            // SALVA NO SQLITE
-            // =================================================
 
             Pedido pedidoAtualizado =
                 await _vendaService
@@ -731,6 +915,7 @@ public partial class MainViewModel : ViewModelBase
             EmAlteracao =
                 false;
 
+
             PodeEditar =
                 false;
 
@@ -740,6 +925,7 @@ public partial class MainViewModel : ViewModelBase
 
             Mensagem =
                 $"Pedido {pedidoAtualizado.NumeroPedido} salvo e lacrado com sucesso.";
+
 
             OnPropertyChanged(
                 nameof(PodeFinalizarNovaVenda)
@@ -781,19 +967,23 @@ public partial class MainViewModel : ViewModelBase
 
         try
         {
-            await _vendaService.CancelarPedidoAsync(
-                PedidoSelecionado.Id
-            );
+            await _vendaService
+                .CancelarPedidoAsync(
+                    PedidoSelecionado.Id
+                );
 
 
             PedidoSelecionado.Cancelado =
                 true;
 
+
             PedidoSelecionado.Lacrado =
                 true;
 
+
             PedidoSelecionado.Sincronizado =
                 false;
+
 
             PedidoSelecionado.AtualizadoEm =
                 DateTime.Now;
@@ -801,6 +991,7 @@ public partial class MainViewModel : ViewModelBase
 
             PodeEditar =
                 false;
+
 
             EmAlteracao =
                 false;
@@ -811,6 +1002,7 @@ public partial class MainViewModel : ViewModelBase
 
             Mensagem =
                 $"Pedido {PedidoSelecionado.NumeroPedido} cancelado com sucesso.";
+
 
             OnPropertyChanged(
                 nameof(PodeFinalizarNovaVenda)
@@ -829,17 +1021,22 @@ public partial class MainViewModel : ViewModelBase
     // CARREGAR PEDIDO
     // =========================================================
 
-    private void CarregarPedido(Pedido? pedido)
+    private void CarregarPedido(
+        Pedido? pedido)
     {
         if (pedido == null)
         {
-            EmAlteracao = false;
+            EmAlteracao =
+                false;
+
 
             AtualizarStatusPedido();
+
 
             OnPropertyChanged(
                 nameof(PodeFinalizarNovaVenda)
             );
+
 
             return;
         }
@@ -887,7 +1084,9 @@ public partial class MainViewModel : ViewModelBase
 
         ClienteSelecionado =
             Clientes.FirstOrDefault(
-                c => c.Id == pedido.ClienteId
+                c =>
+                    c.Id ==
+                    pedido.ClienteId
             );
 
 
@@ -896,10 +1095,15 @@ public partial class MainViewModel : ViewModelBase
         // =====================================================
 
         Total =
-            Itens.Sum(x => x.Total);
+            Itens.Sum(
+                x => x.Total
+            );
+
 
         Desconto =
-            pedido.Desconto.ToString("0.00");
+            pedido.Desconto
+                .ToString("0.00");
+
 
         AtualizarSubTotal();
 
@@ -911,7 +1115,8 @@ public partial class MainViewModel : ViewModelBase
         if (string.IsNullOrWhiteSpace(
             pedido.FormaPagamento))
         {
-            FormaPagamento = "Pix";
+            FormaPagamento =
+                "Pix";
         }
         else
         {
@@ -921,7 +1126,9 @@ public partial class MainViewModel : ViewModelBase
 
 
         ValorPago =
-            pedido.ValorPago.ToString("0.00");
+            pedido.ValorPago
+                .ToString("0.00");
+
 
         Troco =
             pedido.Troco;
@@ -934,6 +1141,7 @@ public partial class MainViewModel : ViewModelBase
         EmAlteracao =
             false;
 
+
         PodeEditar =
             false;
 
@@ -943,6 +1151,7 @@ public partial class MainViewModel : ViewModelBase
 
         Mensagem =
             $"Pedido {pedido.NumeroPedido} carregado.";
+
 
         OnPropertyChanged(
             nameof(PodeFinalizarNovaVenda)
@@ -959,7 +1168,9 @@ public partial class MainViewModel : ViewModelBase
     {
         Pedido? pedidoLista =
             Pedidos.FirstOrDefault(
-                p => p.Id == pedidoAtualizado.Id
+                p =>
+                    p.Id ==
+                    pedidoAtualizado.Id
             );
 
 
@@ -996,11 +1207,14 @@ public partial class MainViewModel : ViewModelBase
             StatusPedido =
                 "NOVO PEDIDO";
 
+
             CorStatusPedido =
                 "#2563EB";
 
+
             PodeEditar =
                 true;
+
 
             return;
         }
@@ -1015,11 +1229,14 @@ public partial class MainViewModel : ViewModelBase
             StatusPedido =
                 "CANCELADO";
 
+
             CorStatusPedido =
                 "#DC2626";
 
+
             PodeEditar =
                 false;
+
 
             return;
         }
@@ -1034,11 +1251,14 @@ public partial class MainViewModel : ViewModelBase
             StatusPedido =
                 "EM ALTERAÇÃO";
 
+
             CorStatusPedido =
                 "#FFC400";
 
+
             PodeEditar =
                 true;
+
 
             return;
         }
@@ -1051,8 +1271,10 @@ public partial class MainViewModel : ViewModelBase
         StatusPedido =
             "LACRADO";
 
+
         CorStatusPedido =
             "#16A34A";
+
 
         PodeEditar =
             false;
@@ -1066,10 +1288,6 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private async Task FinalizarVendaAsync()
     {
-        // =====================================================
-        // PEDIDO EXISTENTE NÃO É FINALIZADO AQUI
-        // =====================================================
-
         if (PedidoSelecionado != null)
         {
             Mensagem =
@@ -1099,14 +1317,12 @@ public partial class MainViewModel : ViewModelBase
 
         try
         {
-            // =================================================
-            // DESCONTO
-            // =================================================
-
-            decimal valorDesconto = 0;
+            decimal valorDesconto =
+                0;
 
 
-            if (!string.IsNullOrWhiteSpace(Desconto))
+            if (!string.IsNullOrWhiteSpace(
+                Desconto))
             {
                 decimal.TryParse(
                     Desconto,
@@ -1115,14 +1331,12 @@ public partial class MainViewModel : ViewModelBase
             }
 
 
-            // =================================================
-            // VALOR PAGO
-            // =================================================
-
-            decimal valorPagoDecimal = 0;
+            decimal valorPagoDecimal =
+                0;
 
 
-            if (!string.IsNullOrWhiteSpace(ValorPago))
+            if (!string.IsNullOrWhiteSpace(
+                ValorPago))
             {
                 decimal.TryParse(
                     ValorPago,
@@ -1130,10 +1344,6 @@ public partial class MainViewModel : ViewModelBase
                 );
             }
 
-
-            // =================================================
-            // GRAVA NOVO PEDIDO
-            // =================================================
 
             Pedido novoPedido =
                 await _vendaService
@@ -1149,19 +1359,11 @@ public partial class MainViewModel : ViewModelBase
                     );
 
 
-            // =================================================
-            // ADICIONA NA PESQUISA
-            // =================================================
-
             Pedidos.Insert(
                 0,
                 novoPedido
             );
 
-
-            // =================================================
-            // SELECIONA PEDIDO
-            // =================================================
 
             PedidoSelecionado =
                 novoPedido;
@@ -1169,6 +1371,7 @@ public partial class MainViewModel : ViewModelBase
 
             EmAlteracao =
                 false;
+
 
             PodeEditar =
                 false;
@@ -1179,6 +1382,7 @@ public partial class MainViewModel : ViewModelBase
 
             Mensagem =
                 $"Pedido {novoPedido.NumeroPedido} finalizado e salvo com sucesso.";
+
 
             OnPropertyChanged(
                 nameof(PodeFinalizarNovaVenda)
@@ -1197,7 +1401,8 @@ public partial class MainViewModel : ViewModelBase
     // BUSCA PRODUTO PELO CÓDIGO
     // =========================================================
 
-    partial void OnCodigoChanged(string value)
+    partial void OnCodigoChanged(
+        string value)
     {
         if (!string.IsNullOrEmpty(value) &&
             !value.All(char.IsDigit))
@@ -1209,12 +1414,16 @@ public partial class MainViewModel : ViewModelBase
                         .ToArray()
                 );
 
+
             return;
         }
 
 
-        if (string.IsNullOrWhiteSpace(value))
+        if (string.IsNullOrWhiteSpace(
+            value))
+        {
             return;
+        }
 
 
         if (!int.TryParse(
@@ -1245,7 +1454,8 @@ public partial class MainViewModel : ViewModelBase
     // ALTERAÇÃO DO DESCONTO
     // =========================================================
 
-    partial void OnDescontoChanged(string value)
+    partial void OnDescontoChanged(
+        string value)
     {
         AtualizarSubTotal();
     }
@@ -1257,10 +1467,12 @@ public partial class MainViewModel : ViewModelBase
 
     private void AtualizarSubTotal()
     {
-        decimal valorDesconto = 0;
+        decimal valorDesconto =
+            0;
 
 
-        if (!string.IsNullOrWhiteSpace(Desconto))
+        if (!string.IsNullOrWhiteSpace(
+            Desconto))
         {
             decimal.TryParse(
                 Desconto,
@@ -1271,12 +1483,14 @@ public partial class MainViewModel : ViewModelBase
 
         if (valorDesconto >= Total)
         {
-            SubTotal = 0;
+            SubTotal =
+                0;
         }
         else
         {
             SubTotal =
-                Total - valorDesconto;
+                Total -
+                valorDesconto;
         }
 
 
@@ -1290,7 +1504,8 @@ public partial class MainViewModel : ViewModelBase
 
     private void AtualizarPagamento()
     {
-        if (FormaPagamento == "Espécie")
+        if (FormaPagamento ==
+            "Espécie")
         {
             AtualizarTroco();
 
@@ -1300,6 +1515,7 @@ public partial class MainViewModel : ViewModelBase
 
         ValorPago =
             SubTotal.ToString("0.00");
+
 
         Troco =
             0;
@@ -1312,18 +1528,22 @@ public partial class MainViewModel : ViewModelBase
 
     private void AtualizarTroco()
     {
-        if (FormaPagamento != "Espécie")
+        if (FormaPagamento !=
+            "Espécie")
         {
-            Troco = 0;
+            Troco =
+                0;
 
             return;
         }
 
 
-        decimal valorPagoDecimal = 0;
+        decimal valorPagoDecimal =
+            0;
 
 
-        if (!string.IsNullOrWhiteSpace(ValorPago))
+        if (!string.IsNullOrWhiteSpace(
+            ValorPago))
         {
             decimal.TryParse(
                 ValorPago,
@@ -1332,9 +1552,11 @@ public partial class MainViewModel : ViewModelBase
         }
 
 
-        if (valorPagoDecimal <= SubTotal)
+        if (valorPagoDecimal <=
+            SubTotal)
         {
-            Troco = 0;
+            Troco =
+                0;
 
             return;
         }

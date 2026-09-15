@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Styling;
+using CursoAvalonia.Services;
 using CursoAvalonia.ViewModels;
 using CursoAvalonia.Views;
 
@@ -8,22 +10,75 @@ namespace CursoAvalonia;
 
 public partial class App : Application
 {
+    // =========================================================
+    // SERVIÇO ÚNICO DE INICIALIZAÇÃO
+    // =========================================================
+
+    private readonly InicializacaoService _inicializacaoService =
+        new();
+
+
+    // =========================================================
+    // INICIALIZAÇÃO DO AVALONIA
+    // =========================================================
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
     }
 
+
+    // =========================================================
+    // INICIALIZAÇÃO DA APLICAÇÃO
+    // =========================================================
+
     public override void OnFrameworkInitializationCompleted()
     {
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        // =====================================================
+        // TEMA
+        // =====================================================
+
+        RequestedThemeVariant =
+            ThemeVariant.Light;
+
+
+        // =====================================================
+        // APLICAÇÃO DESKTOP
+        // =====================================================
+
+        if (ApplicationLifetime
+            is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow
-            {
-                DataContext = new MainViewModel(),
-            };
+            // =================================================
+            // VIEWMODEL PRINCIPAL
+            // =================================================
+
+            MainViewModel mainViewModel =
+                new MainViewModel(
+                    _inicializacaoService
+                );
+
+
+            // =================================================
+            // ABRIR TELA PRINCIPAL IMEDIATAMENTE
+            // =================================================
+
+            desktop.MainWindow =
+                new MainWindow
+                {
+                    DataContext =
+                        mainViewModel
+                };
+
+
+            // =================================================
+            // SINCRONIZAÇÃO EM SEGUNDO PLANO
+            // =================================================
+
+            _ = _inicializacaoService
+                .InicializarAsync();
         }
 
-        RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Light;
 
         base.OnFrameworkInitializationCompleted();
     }
