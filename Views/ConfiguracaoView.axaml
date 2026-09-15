@@ -4,8 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:CursoAvalonia.ViewModels"
              mc:Ignorable="d"
-             d:DesignWidth="1000"
-             d:DesignHeight="760"
+             d:DesignWidth="820"
+             d:DesignHeight="650"
              x:Class="CursoAvalonia.Views.ConfiguracaoView"
              x:DataType="vm:ConfiguracaoViewModel">
 
@@ -13,47 +13,93 @@
         <vm:ConfiguracaoViewModel />
     </Design.DataContext>
 
-    <Grid Background="#F6F6F6">
 
-        <ScrollViewer>
-            <StackPanel Margin="20"
-                        Spacing="14">
+    <!-- ===================================================== -->
+    <!-- ESTILOS                                               -->
+    <!-- ===================================================== -->
+
+    <UserControl.Styles>
+
+        <Style Selector="TextBox">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#171717"/>
+            <Setter Property="BorderBrush" Value="#D6D6D6"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,3"/>
+        </Style>
+
+        <Style Selector="ComboBox">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#171717"/>
+            <Setter Property="BorderBrush" Value="#D6D6D6"/>
+        </Style>
+
+        <Style Selector="Button">
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+    </UserControl.Styles>
+
+
+    <!-- ===================================================== -->
+    <!-- CONTEÚDO                                              -->
+    <!-- ===================================================== -->
+
+    <Grid Background="#F4F4F4">
+
+        <ScrollViewer
+            VerticalScrollBarVisibility="Auto"
+            HorizontalScrollBarVisibility="Disabled">
+
+            <StackPanel
+                Margin="14"
+                Spacing="10">
+
 
                 <!-- ================================================= -->
                 <!-- CABEÇALHO                                         -->
                 <!-- ================================================= -->
 
-                <Border Background="#171717"
-                        CornerRadius="8"
-                        Padding="18">
+                <Border
+                    Background="#171717"
+                    CornerRadius="7"
+                    Padding="14,10">
 
                     <Grid ColumnDefinitions="*,Auto">
 
                         <StackPanel>
 
-                            <TextBlock Text="CONFIGURAÇÃO DO SISTEMA"
-                                       Foreground="#FFC400"
-                                       FontSize="21"
-                                       FontWeight="Bold"/>
+                            <TextBlock
+                                Text="CONFIGURAÇÃO"
+                                Foreground="#FFC400"
+                                FontSize="18"
+                                FontWeight="Bold"/>
 
-                            <TextBlock Text="SoftcomShop V2"
-                                       Foreground="White"
-                                       FontSize="12"
-                                       Margin="0,4,0,0"/>
+                            <TextBlock
+                                Text="API SoftcomShop V2 e SQL Server"
+                                Foreground="#CCCCCC"
+                                FontSize="11"
+                                Margin="0,2,0,0"/>
 
                         </StackPanel>
 
 
-                        <Border Grid.Column="1"
-                                Background="{Binding CorStatusApi}"
-                                CornerRadius="6"
-                                Padding="14,7"
-                                VerticalAlignment="Center">
+                        <Border
+                            Grid.Column="1"
+                            Background="{Binding CorStatusApi}"
+                            CornerRadius="5"
+                            Padding="10,5"
+                            VerticalAlignment="Center">
 
-                            <TextBlock Text="{Binding StatusApi}"
-                                       Foreground="White"
-                                       FontWeight="Bold"
-                                       FontSize="12"/>
+                            <TextBlock
+                                Text="{Binding StatusApi}"
+                                Foreground="White"
+                                FontSize="10"
+                                FontWeight="Bold"/>
 
                         </Border>
 
@@ -63,89 +109,105 @@
 
 
                 <!-- ================================================= -->
-                <!-- VINCULAÇÃO                                        -->
+                <!-- SOFTCOMSHOP API                                   -->
                 <!-- ================================================= -->
 
-                <Border Background="White"
-                        BorderBrush="#DDDDDD"
-                        BorderThickness="1"
-                        CornerRadius="9"
-                        Padding="18">
+                <Border
+                    Background="White"
+                    BorderBrush="#DDDDDD"
+                    BorderThickness="1"
+                    CornerRadius="7"
+                    Padding="14">
 
-                    <StackPanel Spacing="12">
+                    <StackPanel Spacing="8">
 
-                        <TextBlock Text="Vinculação do Dispositivo"
-                                   FontSize="17"
-                                   FontWeight="Bold"
-                                   Foreground="#171717"/>
+                        <TextBlock
+                            Text="SoftcomShop V2"
+                            FontSize="15"
+                            FontWeight="Bold"
+                            Foreground="#171717"/>
 
 
                         <!-- URL -->
 
-                        <StackPanel Spacing="4">
+                        <Grid
+                            ColumnDefinitions="*,135"
+                            ColumnSpacing="8">
 
-                            <TextBlock Text="URL de Vinculação"
-                                       FontSize="11"
-                                       Foreground="#555555"/>
+                            <StackPanel
+                                Grid.Column="0"
+                                Spacing="3">
 
-                            <Grid ColumnDefinitions="*,160"
-                                  ColumnSpacing="10">
+                                <TextBlock
+                                    Text="URL de Vinculação"
+                                    FontSize="10"
+                                    Foreground="#555555"/>
 
-                                <TextBox Grid.Column="0"
-                                         Text="{Binding UrlDispositivo}"
-                                         Watermark="Cole a URL do dispositivo..."/>
+                                <TextBox
+                                    Text="{Binding UrlDispositivo}"/>
 
-                                <Button Grid.Column="1"
-                                        Content="PROCESSAR URL"
-                                        Background="#FFC400"
-                                        Foreground="#171717"
-                                        FontWeight="Bold"
-                                        Command="{Binding ProcessarUrlCommand}"/>
+                            </StackPanel>
 
-                            </Grid>
 
-                        </StackPanel>
+                            <Button
+                                Grid.Column="1"
+                                Content="PROCESSAR URL"
+                                VerticalAlignment="Bottom"
+                                Background="#FFC400"
+                                Foreground="#171717"
+                                Command="{Binding ProcessarUrlCommand}"/>
+
+                        </Grid>
 
 
                         <!-- BASE URL -->
 
-                        <StackPanel Spacing="4">
+                        <StackPanel Spacing="3">
 
-                            <TextBlock Text="Base URL"
-                                       FontSize="11"
-                                       Foreground="#555555"/>
+                            <TextBlock
+                                Text="Base URL"
+                                FontSize="10"
+                                Foreground="#555555"/>
 
-                            <TextBox Text="{Binding BaseUrl}"
-                                     IsReadOnly="True"/>
+                            <TextBox
+                                Text="{Binding BaseUrl}"
+                                IsReadOnly="True"/>
 
                         </StackPanel>
 
 
                         <!-- EMPRESA / CNPJ -->
 
-                        <Grid ColumnDefinitions="*,*"
-                              ColumnSpacing="10">
+                        <Grid
+                            ColumnDefinitions="*,*"
+                            ColumnSpacing="8">
 
-                            <StackPanel Grid.Column="0"
-                                        Spacing="4">
+                            <StackPanel
+                                Grid.Column="0"
+                                Spacing="3">
 
-                                <TextBlock Text="Empresa"
-                                           FontSize="11"
-                                           Foreground="#555555"/>
+                                <TextBlock
+                                    Text="Empresa"
+                                    FontSize="10"
+                                    Foreground="#555555"/>
 
-                                <TextBox Text="{Binding EmpresaNome}"/>
+                                <TextBox
+                                    Text="{Binding EmpresaNome}"/>
 
                             </StackPanel>
 
 
-                            <StackPanel Grid.Column="1"
-                                        Spacing="4">
+                            <StackPanel
+                                Grid.Column="1"
+                                Spacing="3">
 
-                                <TextBlock Text="CNPJ"
-                                           FontSize="11"
-                                           Foreground="#555555"/>
+                                <TextBlock
+                                    Text="CNPJ"
+                                    FontSize="10"
+                                    Foreground="#555555"/>
 
-                                <TextBox Text="{Binding EmpresaCnpj}"/>
+                                <TextBox
+                                    Text="{Binding EmpresaCnpj}"/>
 
                             </StackPanel>
 
@@ -154,30 +216,37 @@
 
                         <!-- DEVICE NAME / DEVICE ID -->
 
-                        <Grid ColumnDefinitions="*,*"
-                              ColumnSpacing="10">
+                        <Grid
+                            ColumnDefinitions="*,*"
+                            ColumnSpacing="8">
 
-                            <StackPanel Grid.Column="0"
-                                        Spacing="4">
+                            <StackPanel
+                                Grid.Column="0"
+                                Spacing="3">
 
-                                <TextBlock Text="Nome do Dispositivo"
-                                           FontSize="11"
-                                           Foreground="#555555"/>
+                                <TextBlock
+                                    Text="Nome do Dispositivo"
+                                    FontSize="10"
+                                    Foreground="#555555"/>
 
-                                <TextBox Text="{Binding DeviceName}"/>
+                                <TextBox
+                                    Text="{Binding DeviceName}"/>
 
                             </StackPanel>
 
 
-                            <StackPanel Grid.Column="1"
-                                        Spacing="4">
+                            <StackPanel
+                                Grid.Column="1"
+                                Spacing="3">
 
-                                <TextBlock Text="Device ID"
-                                           FontSize="11"
-                                           Foreground="#555555"/>
+                                <TextBlock
+                                    Text="Device ID"
+                                    FontSize="10"
+                                    Foreground="#555555"/>
 
-                                <TextBox Text="{Binding DeviceId}"
-                                         Watermark="Informe o identificador do dispositivo"/>
+                                <TextBox
+                                    Text="{Binding DeviceId}"
+                                    IsReadOnly="True"/>
 
                             </StackPanel>
 
@@ -186,51 +255,54 @@
 
                         <!-- CLIENT ID -->
 
-                        <StackPanel Spacing="4">
+                        <StackPanel Spacing="3">
 
-                            <TextBlock Text="Client ID"
-                                       FontSize="11"
-                                       Foreground="#555555"/>
+                            <TextBlock
+                                Text="Client ID"
+                                FontSize="10"
+                                Foreground="#555555"/>
 
-                            <TextBox Text="{Binding ClientId}"/>
+                            <TextBox
+                                Text="{Binding ClientId}"/>
 
                         </StackPanel>
 
 
                         <!-- CLIENT SECRET -->
 
-                        <StackPanel Spacing="4">
+                        <StackPanel Spacing="3">
 
-                            <TextBlock Text="Client Secret"
-                                       FontSize="11"
-                                       Foreground="#555555"/>
+                            <TextBlock
+                                Text="Client Secret"
+                                FontSize="10"
+                                Foreground="#555555"/>
 
-                            <TextBox Text="{Binding ClientSecret}"
-                                     PasswordChar="●"/>
+                            <TextBox
+                                Text="{Binding ClientSecret}"
+                                PasswordChar="●"/>
 
                         </StackPanel>
 
 
-                        <!-- BOTÕES -->
+                        <!-- BOTÕES API -->
 
-                        <Grid ColumnDefinitions="*,*"
-                              ColumnSpacing="10">
+                        <Grid
+                            ColumnDefinitions="*,*"
+                            ColumnSpacing="8">
 
-                            <Button Grid.Column="0"
-                                    Content="VINCULAR DISPOSITIVO"
-                                    Height="42"
-                                    Background="#171717"
-                                    Foreground="#FFC400"
-                                    FontWeight="Bold"
-                                    Command="{Binding VincularDispositivoCommand}"/>
+                            <Button
+                                Grid.Column="0"
+                                Content="VINCULAR DISPOSITIVO"
+                                Background="#171717"
+                                Foreground="#FFC400"
+                                Command="{Binding VincularDispositivoCommand}"/>
 
-                            <Button Grid.Column="1"
-                                    Content="TESTAR AUTENTICAÇÃO"
-                                    Height="42"
-                                    Background="#2563EB"
-                                    Foreground="White"
-                                    FontWeight="Bold"
-                                    Command="{Binding TestarAutenticacaoCommand}"/>
+                            <Button
+                                Grid.Column="1"
+                                Content="TESTAR AUTENTICAÇÃO"
+                                Background="#2563EB"
+                                Foreground="White"
+                                Command="{Binding TestarAutenticacaoCommand}"/>
 
                         </Grid>
 
@@ -240,124 +312,156 @@
 
 
                 <!-- ================================================= -->
-                <!-- TOKEN                                             -->
+                <!-- SQL SERVER                                        -->
                 <!-- ================================================= -->
 
-                <Border Background="White"
-                        BorderBrush="#DDDDDD"
-                        BorderThickness="1"
-                        CornerRadius="9"
-                        Padding="18">
+                <Border
+                    Background="White"
+                    BorderBrush="#DDDDDD"
+                    BorderThickness="1"
+                    CornerRadius="7"
+                    Padding="14">
 
                     <StackPanel Spacing="8">
 
-                        <TextBlock Text="Autenticação"
-                                   FontSize="17"
-                                   FontWeight="Bold"
-                                   Foreground="#171717"/>
 
-                        <TextBlock Text="Token recebido"
-                                   FontSize="11"
-                                   Foreground="#555555"/>
+                        <!-- CABEÇALHO SQL -->
 
-                        <TextBox Text="{Binding Token}"
-                                 IsReadOnly="True"
-                                 TextWrapping="Wrap"
-                                 AcceptsReturn="True"
-                                 MinHeight="65"/>
+                        <Grid ColumnDefinitions="*,Auto">
 
-                    </StackPanel>
-
-                </Border>
-
-
-                <!-- ================================================= -->
-                <!-- SQL SERVER - VISUAL POR ENQUANTO                  -->
-                <!-- ================================================= -->
-
-                <Border Background="White"
-                        BorderBrush="#DDDDDD"
-                        BorderThickness="1"
-                        CornerRadius="9"
-                        Padding="18">
-
-                    <StackPanel Spacing="12">
-
-                        <TextBlock Text="SQL Server"
-                                   FontSize="17"
-                                   FontWeight="Bold"
-                                   Foreground="#171717"/>
-
-                        <TextBlock Text="Configuração da conexão com o banco SQL Server."
-                                   FontSize="12"
-                                   Foreground="#777777"/>
-
-
-                        <Grid ColumnDefinitions="*,*"
-                              ColumnSpacing="10">
-
-                            <StackPanel Grid.Column="0"
-                                        Spacing="4">
-
-                                <TextBlock Text="Servidor"
-                                           FontSize="11"
-                                           Foreground="#555555"/>
-
-                                <TextBox Watermark="Ex.: SERVIDOR\SQL2019"/>
-
-                            </StackPanel>
-
-
-                            <StackPanel Grid.Column="1"
-                                        Spacing="4">
-
-                                <TextBlock Text="Banco"
-                                           FontSize="11"
-                                           Foreground="#555555"/>
-
-                                <TextBox Watermark="Nome do banco"/>
-
-                            </StackPanel>
-
-                        </Grid>
-
-
-                        <Grid ColumnDefinitions="*,*"
-                              ColumnSpacing="10">
-
-                            <StackPanel Grid.Column="0"
-                                        Spacing="4">
-
-                                <TextBlock Text="Usuário"
-                                           FontSize="11"
-                                           Foreground="#555555"/>
-
-                                <TextBox Watermark="Usuário SQL"/>
-
-                            </StackPanel>
-
-
-                            <StackPanel Grid.Column="1"
-                                        Spacing="4">
-
-                                <TextBlock Text="Senha"
-                                           FontSize="11"
-                                           Foreground="#555555"/>
-
-                                <TextBox PasswordChar="●"/>
-
-                            </StackPanel>
-
-                        </Grid>
-
-
-                        <Button Content="TESTAR CONEXÃO SQL"
-                                Height="40"
-                                Width="190"
-                                HorizontalAlignment="Right"
-                                Background="#E5E7EB"
+                            <TextBlock
+                                Text="SQL Server"
+                                FontSize="15"
+                                FontWeight="Bold"
                                 Foreground="#171717"
-                                FontWeight="Bold"/>
+                                VerticalAlignment="Center"/>
+
+
+                            <Border
+                                Grid.Column="1"
+                                Background="{Binding CorStatusSql}"
+                                CornerRadius="5"
+                                Padding="10,5">
+
+                                <TextBlock
+                                    Text="{Binding StatusSql}"
+                                    Foreground="White"
+                                    FontSize="10"
+                                    FontWeight="Bold"/>
+
+                            </Border>
+
+                        </Grid>
+
+
+                        <!-- SERVIDOR / BANCO -->
+
+                        <Grid
+                            ColumnDefinitions="*,*"
+                            ColumnSpacing="8">
+
+                            <StackPanel
+                                Grid.Column="0"
+                                Spacing="3">
+
+                                <TextBlock
+                                    Text="Servidor"
+                                    FontSize="10"
+                                    Foreground="#555555"/>
+
+                                <TextBox
+                                    Text="{Binding SqlServidor}"/>
+
+                            </StackPanel>
+
+
+                            <StackPanel
+                                Grid.Column="1"
+                                Spacing="3">
+
+                                <TextBlock
+                                    Text="Banco"
+                                    FontSize="10"
+                                    Foreground="#555555"/>
+
+                                <ComboBox
+                                    ItemsSource="{Binding BancosSql}"
+                                    SelectedItem="{Binding BancoSelecionado}"/>
+
+                            </StackPanel>
+
+                        </Grid>
+
+
+                        <!-- USUÁRIO / SENHA -->
+
+                        <Grid
+                            ColumnDefinitions="*,*"
+                            ColumnSpacing="8">
+
+                            <StackPanel
+                                Grid.Column="0"
+                                Spacing="3">
+
+                                <TextBlock
+                                    Text="Usuário"
+                                    FontSize="10"
+                                    Foreground="#555555"/>
+
+                                <TextBox
+                                    Text="{Binding SqlUsuario}"/>
+
+                            </StackPanel>
+
+
+                            <StackPanel
+                                Grid.Column="1"
+                                Spacing="3">
+
+                                <TextBlock
+                                    Text="Senha"
+                                    FontSize="10"
+                                    Foreground="#555555"/>
+
+                                <TextBox
+                                    Text="{Binding SqlSenha}"
+                                    PasswordChar="●"/>
+
+                            </StackPanel>
+
+                        </Grid>
+
+
+                        <!-- BOTÕES SQL / SINCRONIZAÇÃO -->
+
+                        <Grid
+                            ColumnDefinitions="*,*,*"
+                            ColumnSpacing="8">
+
+                            <Button
+                                Grid.Column="0"
+                                Content="TESTAR CONEXÃO"
+                                Background="#FFC400"
+                                Foreground="#171717"
+                                Command="{Binding TestarConexaoSqlCommand}"/>
+
+
+                            <Button
+                                Grid.Column="1"
+                                Content="TESTAR BANCO"
+                                Background="#171717"
+                                Foreground="#FFC400"
+                                Command="{Binding TestarBancoSelecionadoCommand}"/>
+
+
+                            <Button
+                                Grid.Column="2"
+                                Content="SINCRONIZAR API"
+                                Background="#2563EB"
+                                Foreground="White"
+                                Command="{Binding SincronizarApiCommand}"/>
+
+                        </Grid>
 
                     </StackPanel>
 
@@ -365,20 +469,53 @@
 
 
                 <!-- ================================================= -->
-                <!-- MENSAGEM                                          -->
+                <!-- MENSAGEM / SALVAR                                  -->
                 <!-- ================================================= -->
 
-                <Border Background="#FFF8D6"
+                <Grid
+                    ColumnDefinitions="*,180"
+                    ColumnSpacing="10">
+
+                    <Border
+                        Grid.Column="0"
+                        Background="#FFF8D6"
                         BorderBrush="#FFC400"
                         BorderThickness="1"
                         CornerRadius="6"
-                        Padding="12">
+                        Padding="10">
 
-                    <TextBlock Text="{Binding Mensagem}"
-                               Foreground="#171717"
-                               TextWrapping="Wrap"/>
+                        <TextBlock
+                            Text="{Binding Mensagem}"
+                            Foreground="#171717"
+                            FontSize="11"
+                            TextWrapping="Wrap"
+                            VerticalAlignment="Center"/>
 
-                </Border>
+                    </Border>
+
+
+                    <Button
+                        Grid.Column="1"
+                        Content="SALVAR CONFIGURAÇÃO"
+                        Height="40"
+                        Background="#16A34A"
+                        Foreground="White"
+                        FontWeight="Bold"
+                        Command="{Binding SalvarConfiguracaoCommand}"/>
+
+                </Grid>
+
+
+                <!-- ================================================= -->
+                <!-- INFORMAÇÃO                                        -->
+                <!-- ================================================= -->
+
+                <TextBlock
+                    Text="As configurações serão reutilizadas automaticamente ao abrir o sistema."
+                    FontSize="10"
+                    Foreground="#777777"
+                    HorizontalAlignment="Center"/>
+
 
             </StackPanel>
 

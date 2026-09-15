@@ -3,10 +3,12 @@
         xmlns:views="using:CursoAvalonia.Views"
         x:Class="CursoAvalonia.Views.ConfiguracaoWindow"
         Title="Configuração"
-        Width="1000"
-        Height="760"
-        MinWidth="900"
-        MinHeight="650">
+        Width="820"
+        Height="680"
+        MinWidth="760"
+        MinHeight="600"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True">
 
     <views:ConfiguracaoView />
 

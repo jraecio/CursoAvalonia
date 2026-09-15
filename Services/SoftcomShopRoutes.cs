@@ -2,6 +2,13 @@
 
 public class SoftcomShopRoutes
 {
+
+    public string Clientes =>
+    $"{_baseUrl}/softauth/api/clientes/clientes";
+
+    public string ClientesPagina(int pagina) =>
+        $"{_baseUrl}/softauth/api/clientes/clientes/page/{pagina}";
+
     private readonly string _baseUrl;
 
     public SoftcomShopRoutes(string baseUrl)

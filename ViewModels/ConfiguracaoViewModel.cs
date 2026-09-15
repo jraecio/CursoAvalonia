@@ -2,6 +2,8 @@
 using CursoAvalonia.Models;
 using CursoAvalonia.Services;
 using System;
+using System.Collections.ObjectModel;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace CursoAvalonia.ViewModels;
@@ -12,7 +14,28 @@ public partial class ConfiguracaoViewModel : ViewModelBase
     // SERVIÇOS
     // =========================================================
 
+    private readonly SoftcomShopApiService _apiService = new();
+
     private readonly SoftcomShopAuthService _authService = new();
+
+    private readonly SqlServerService _sqlService = new();
+
+    private readonly ConfiguracaoService _configuracaoService = new();
+
+
+    // =========================================================
+    // CONSTRUTOR
+    // =========================================================
+
+    public ConfiguracaoViewModel()
+    {
+        DeviceId = ObterDeviceId();
+
+        SqlUsuario = "sa";
+        SqlSenha = "qaz@123";
+
+        _ = CarregarConfiguracaoAsync();
+    }
 
 
     // =========================================================
@@ -29,7 +52,7 @@ public partial class ConfiguracaoViewModel : ViewModelBase
 
 
     // =========================================================
-    // BASE URL
+    // API
     // =========================================================
 
     private string _baseUrl = string.Empty;
@@ -41,10 +64,6 @@ public partial class ConfiguracaoViewModel : ViewModelBase
     }
 
 
-    // =========================================================
-    // CLIENT ID
-    // =========================================================
-
     private string _clientId = string.Empty;
 
     public string ClientId
@@ -54,10 +73,6 @@ public partial class ConfiguracaoViewModel : ViewModelBase
     }
 
 
-    // =========================================================
-    // CLIENT SECRET
-    // =========================================================
-
     private string _clientSecret = string.Empty;
 
     public string ClientSecret
@@ -66,10 +81,6 @@ public partial class ConfiguracaoViewModel : ViewModelBase
         set => SetProperty(ref _clientSecret, value);
     }
 
-
-    // =========================================================
-    // EMPRESA
-    // =========================================================
 
     private string _empresaNome = string.Empty;
 
@@ -88,10 +99,6 @@ public partial class ConfiguracaoViewModel : ViewModelBase
         set => SetProperty(ref _empresaCnpj, value);
     }
 
-
-    // =========================================================
-    // DISPOSITIVO
-    // =========================================================
 
     private string _deviceName = string.Empty;
 
@@ -124,8 +131,17 @@ public partial class ConfiguracaoViewModel : ViewModelBase
     }
 
 
+    private DateTime? _ultimaAutenticacao;
+
+    public DateTime? UltimaAutenticacao
+    {
+        get => _ultimaAutenticacao;
+        set => SetProperty(ref _ultimaAutenticacao, value);
+    }
+
+
     // =========================================================
-    // STATUS
+    // STATUS API
     // =========================================================
 
     private string _statusApi = "NÃO CONFIGURADO";
@@ -145,6 +161,84 @@ public partial class ConfiguracaoViewModel : ViewModelBase
         set => SetProperty(ref _corStatusApi, value);
     }
 
+
+    // =========================================================
+    // SQL SERVER
+    // =========================================================
+
+    private string _sqlServidor = string.Empty;
+
+    public string SqlServidor
+    {
+        get => _sqlServidor;
+        set => SetProperty(ref _sqlServidor, value);
+    }
+
+
+    private string _sqlUsuario = "sa";
+
+    public string SqlUsuario
+    {
+        get => _sqlUsuario;
+        set => SetProperty(ref _sqlUsuario, value);
+    }
+
+
+    private string _sqlSenha = "qaz@123";
+
+    public string SqlSenha
+    {
+        get => _sqlSenha;
+        set => SetProperty(ref _sqlSenha, value);
+    }
+
+
+    public ObservableCollection<string> BancosSql { get; } = new();
+
+
+    private string? _bancoSelecionado;
+
+    public string? BancoSelecionado
+    {
+        get => _bancoSelecionado;
+        set => SetProperty(ref _bancoSelecionado, value);
+    }
+
+
+    private string _statusSql = "DESCONECTADO";
+
+    public string StatusSql
+    {
+        get => _statusSql;
+        set => SetProperty(ref _statusSql, value);
+    }
+
+
+    private string _corStatusSql = "#6B7280";
+
+    public string CorStatusSql
+    {
+        get => _corStatusSql;
+        set => SetProperty(ref _corStatusSql, value);
+    }
+
+
+    // =========================================================
+    // SINCRONIZAÇÃO
+    // =========================================================
+
+    private DateTime? _ultimaSincronizacao;
+
+    public DateTime? UltimaSincronizacao
+    {
+        get => _ultimaSincronizacao;
+        set => SetProperty(ref _ultimaSincronizacao, value);
+    }
+
+
+    // =========================================================
+    // MENSAGEM
+    // =========================================================
 
     private string _mensagem = string.Empty;
 
@@ -170,7 +264,6 @@ public partial class ConfiguracaoViewModel : ViewModelBase
                 DevicePairingParser.Parse(
                     UrlDispositivo
                 );
-
 
             BaseUrl =
                 config.BaseUrl;
@@ -302,6 +395,10 @@ public partial class ConfiguracaoViewModel : ViewModelBase
                 tokenRecebido;
 
 
+            UltimaAutenticacao =
+                DateTime.Now;
+
+
             StatusApi =
                 "AUTENTICADO";
 
@@ -327,7 +424,529 @@ public partial class ConfiguracaoViewModel : ViewModelBase
 
 
     // =========================================================
-    // CRIAR CONFIGURAÇÃO ATUAL
+    // TESTAR CONEXÃO SQL SERVER
+    // =========================================================
+
+    [RelayCommand]
+    private async Task TestarConexaoSqlAsync()
+    {
+        try
+        {
+            Mensagem = string.Empty;
+
+            StatusSql =
+                "CONECTANDO...";
+
+            CorStatusSql =
+                "#F59E0B";
+
+
+            BancosSql.Clear();
+
+            BancoSelecionado =
+                null;
+
+
+            var bancos =
+                await _sqlService
+                    .ListarBancosAsync(
+                        SqlServidor,
+                        SqlUsuario,
+                        SqlSenha
+                    );
+
+
+            foreach (string banco in bancos)
+            {
+                BancosSql.Add(
+                    banco
+                );
+            }
+
+
+            StatusSql =
+                "CONECTADO";
+
+            CorStatusSql =
+                "#16A34A";
+
+
+            Mensagem =
+                $"Conexão realizada. {BancosSql.Count} banco(s) encontrado(s).";
+        }
+        catch (Exception ex)
+        {
+            BancosSql.Clear();
+
+            BancoSelecionado =
+                null;
+
+
+            StatusSql =
+                "ERRO";
+
+            CorStatusSql =
+                "#DC2626";
+
+
+            Mensagem =
+                "Erro ao conectar no SQL Server: " +
+                ex.Message;
+        }
+    }
+
+
+    // =========================================================
+    // TESTAR BANCO SELECIONADO
+    // =========================================================
+
+    [RelayCommand]
+    private async Task TestarBancoSelecionadoAsync()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(
+                BancoSelecionado))
+            {
+                Mensagem =
+                    "Selecione um banco.";
+
+                return;
+            }
+
+
+            bool conectado =
+                await _sqlService
+                    .TestarBancoAsync(
+                        SqlServidor,
+                        BancoSelecionado,
+                        SqlUsuario,
+                        SqlSenha
+                    );
+
+
+            if (conectado)
+            {
+                StatusSql =
+                    "BANCO CONECTADO";
+
+                CorStatusSql =
+                    "#16A34A";
+
+
+                Mensagem =
+                    $"Conectado ao banco {BancoSelecionado} com sucesso.";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusSql =
+                "ERRO";
+
+            CorStatusSql =
+                "#DC2626";
+
+
+            Mensagem =
+                "Erro ao conectar no banco: " +
+                ex.Message;
+        }
+    }
+
+
+    // =========================================================
+    // SALVAR CONFIGURAÇÃO
+    // =========================================================
+
+    [RelayCommand]
+    private async Task SalvarConfiguracaoAsync()
+    {
+        try
+        {
+            ConfiguracaoSistema config =
+                new ConfiguracaoSistema
+                {
+                    BaseUrl =
+                        BaseUrl,
+
+                    ClientId =
+                        ClientId,
+
+                    ClientSecret =
+                        ClientSecret,
+
+                    EmpresaNome =
+                        EmpresaNome,
+
+                    EmpresaCnpj =
+                        EmpresaCnpj,
+
+                    DeviceName =
+                        DeviceName,
+
+                    DeviceId =
+                        DeviceId,
+
+                    Token =
+                        Token,
+
+                    UltimaAutenticacao =
+                        UltimaAutenticacao,
+
+                    SqlServidor =
+                        SqlServidor,
+
+                    SqlBanco =
+                        BancoSelecionado
+                        ?? string.Empty,
+
+                    SqlUsuario =
+                        SqlUsuario,
+
+                    SqlSenha =
+                        SqlSenha,
+
+                    UltimaSincronizacao =
+                        UltimaSincronizacao
+                };
+
+
+            await _configuracaoService
+                .SalvarAsync(
+                    config
+                );
+
+
+            Mensagem =
+                "Configuração salva com sucesso.";
+        }
+        catch (Exception ex)
+        {
+            Mensagem =
+                "Erro ao salvar configuração: " +
+                ex.Message;
+        }
+    }
+
+
+    // =========================================================
+    // CARREGAR CONFIGURAÇÃO
+    // =========================================================
+
+    private async Task CarregarConfiguracaoAsync()
+    {
+        try
+        {
+            ConfiguracaoSistema? config =
+                await _configuracaoService
+                    .CarregarAsync();
+
+
+            if (config == null)
+            {
+                return;
+            }
+
+
+            BaseUrl =
+                config.BaseUrl;
+
+            ClientId =
+                config.ClientId;
+
+            ClientSecret =
+                config.ClientSecret;
+
+            EmpresaNome =
+                config.EmpresaNome;
+
+            EmpresaCnpj =
+                config.EmpresaCnpj;
+
+            DeviceName =
+                config.DeviceName;
+
+
+            if (!string.IsNullOrWhiteSpace(
+                config.DeviceId))
+            {
+                DeviceId =
+                    config.DeviceId;
+            }
+
+
+            Token =
+                config.Token;
+
+
+            UltimaAutenticacao =
+                config.UltimaAutenticacao;
+
+
+            SqlServidor =
+                config.SqlServidor;
+
+
+            SqlUsuario =
+                string.IsNullOrWhiteSpace(
+                    config.SqlUsuario)
+                ? "sa"
+                : config.SqlUsuario;
+
+
+            SqlSenha =
+                string.IsNullOrWhiteSpace(
+                    config.SqlSenha)
+                ? "qaz@123"
+                : config.SqlSenha;
+
+
+            BancoSelecionado =
+                config.SqlBanco;
+
+
+            UltimaSincronizacao =
+                config.UltimaSincronizacao;
+
+
+            if (!string.IsNullOrWhiteSpace(
+                ClientSecret))
+            {
+                StatusApi =
+                    "CONFIGURADO";
+
+                CorStatusApi =
+                    "#16A34A";
+            }
+
+
+            if (!string.IsNullOrWhiteSpace(
+                    SqlServidor) &&
+                !string.IsNullOrWhiteSpace(
+                    BancoSelecionado))
+            {
+                StatusSql =
+                    "CONFIGURADO";
+
+                CorStatusSql =
+                    "#2563EB";
+            }
+
+
+            Mensagem =
+                "Configuração carregada.";
+        }
+        catch (Exception ex)
+        {
+            Mensagem =
+                "Erro ao carregar configuração: " +
+                ex.Message;
+        }
+    }
+
+
+    // =========================================================
+    // TESTAR API DE PRODUTOS
+    // =========================================================
+
+    [RelayCommand]
+    private async Task TestarProdutosApiAsync()
+    {
+        try
+        {
+            Mensagem = string.Empty;
+
+            StatusApi =
+                "BUSCANDO PRODUTOS...";
+
+            CorStatusApi =
+                "#F59E0B";
+
+
+            var produtos =
+                await _apiService
+                    .ObterProdutosAsync();
+
+
+            StatusApi =
+                "PRODUTOS OK";
+
+            CorStatusApi =
+                "#16A34A";
+
+
+            if (produtos.Count == 0)
+            {
+                Mensagem =
+                    "API respondeu corretamente, mas nenhum produto foi retornado.";
+
+                return;
+            }
+
+
+            var primeiro =
+                produtos[0];
+
+
+            Mensagem =
+                $"Produtos recebidos: {produtos.Count} | " +
+                $"Primeiro produto: {primeiro.ProdutoId} - {primeiro.Nome} | " +
+                $"Preço: {primeiro.PrecoVenda}";
+        }
+        catch (Exception ex)
+        {
+            StatusApi =
+                "ERRO API";
+
+            CorStatusApi =
+                "#DC2626";
+
+
+            Mensagem =
+                "Erro ao buscar produtos: " +
+                ex.Message;
+        }
+    }
+
+
+    // =========================================================
+    // TESTAR API DE CLIENTES
+    // =========================================================
+
+    [RelayCommand]
+    private async Task TestarClientesApiAsync()
+    {
+        try
+        {
+            Mensagem = string.Empty;
+
+            StatusApi =
+                "BUSCANDO CLIENTES...";
+
+            CorStatusApi =
+                "#F59E0B";
+
+
+            string json =
+                await _apiService
+                    .ObterClientesJsonAsync();
+
+
+            if (string.IsNullOrWhiteSpace(
+                json))
+            {
+                StatusApi =
+                    "SEM RETORNO";
+
+                CorStatusApi =
+                    "#F59E0B";
+
+
+                Mensagem =
+                    "A API respondeu, mas não retornou clientes.";
+
+                return;
+            }
+
+
+            StatusApi =
+                "CLIENTES OK";
+
+            CorStatusApi =
+                "#16A34A";
+
+
+            const int limite =
+                5000;
+
+
+            Mensagem =
+                json.Length > limite
+                    ? json.Substring(
+                        0,
+                        limite
+                    )
+                    : json;
+        }
+        catch (Exception ex)
+        {
+            StatusApi =
+                "ERRO API";
+
+            CorStatusApi =
+                "#DC2626";
+
+
+            Mensagem =
+                "Erro ao buscar clientes: " +
+                ex.Message;
+        }
+    }
+
+
+    // =========================================================
+    // GERAR / RECUPERAR DEVICE ID
+    // =========================================================
+
+    private static string ObterDeviceId()
+    {
+        string pasta =
+            Path.Combine(
+                Environment.GetFolderPath(
+                    Environment.SpecialFolder
+                        .LocalApplicationData
+                ),
+                "CursoAvalonia"
+            );
+
+
+        Directory.CreateDirectory(
+            pasta
+        );
+
+
+        string arquivo =
+            Path.Combine(
+                pasta,
+                "device.id"
+            );
+
+
+        if (File.Exists(
+            arquivo))
+        {
+            string deviceIdExistente =
+                File.ReadAllText(
+                    arquivo
+                )
+                .Trim();
+
+
+            if (!string.IsNullOrWhiteSpace(
+                deviceIdExistente))
+            {
+                return deviceIdExistente;
+            }
+        }
+
+
+        string novoDeviceId =
+            Guid.NewGuid()
+                .ToString();
+
+
+        File.WriteAllText(
+            arquivo,
+            novoDeviceId
+        );
+
+
+        return novoDeviceId;
+    }
+
+
+    // =========================================================
+    // CRIAR CONFIGURAÇÃO API ATUAL
     // =========================================================
 
     private ConfiguracaoApi CriarConfiguracaoAtual()
@@ -355,5 +974,58 @@ public partial class ConfiguracaoViewModel : ViewModelBase
             DeviceId =
                 DeviceId
         };
+    }
+    // =========================================================
+    // SINCRONIZAR API
+    // =========================================================
+
+    [RelayCommand]
+    private async Task SincronizarApiAsync()
+    {
+        try
+        {
+            Mensagem = string.Empty;
+
+            StatusApi =
+                "SINCRONIZANDO...";
+
+            CorStatusApi =
+                "#F59E0B";
+
+
+            var produtos =
+                await _apiService
+                    .ObterProdutosAsync();
+
+
+            string clientesJson =
+                await _apiService
+                    .ObterClientesJsonAsync();
+
+
+            StatusApi =
+                "SINCRONIZAÇÃO OK";
+
+            CorStatusApi =
+                "#16A34A";
+
+
+            Mensagem =
+                $"Produtos recebidos: {produtos.Count} | " +
+                $"Clientes recebidos com sucesso.";
+        }
+        catch (Exception ex)
+        {
+            StatusApi =
+                "ERRO API";
+
+            CorStatusApi =
+                "#DC2626";
+
+
+            Mensagem =
+                "Erro na sincronização: " +
+                ex.Message;
+        }
     }
 }
