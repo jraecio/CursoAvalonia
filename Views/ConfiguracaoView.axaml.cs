@@ -9,6 +9,5 @@ public partial class ConfiguracaoView : UserControl
     {
         InitializeComponent();
 
-        DataContext = new ConfiguracaoViewModel();
     }
 }

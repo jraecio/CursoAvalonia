@@ -1,116 +1,72 @@
-﻿using CursoAvalonia.Data;
-using Microsoft.EntityFrameworkCore;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CursoAvalonia.Services;
 
 public class InicializacaoService
 {
-    private readonly ConfiguracaoService _configuracaoService;
-    private readonly SincronizacaoService _sincronizacaoService;
-
-    public event EventHandler? SincronizacaoConcluida;
-
-
-    public InicializacaoService()
-    {
-        _configuracaoService =
-            new ConfiguracaoService();
-
-        _sincronizacaoService =
-            new SincronizacaoService();
-    }
-
-
-    // =========================================================
-    // INICIALIZAR SISTEMA
-    // =========================================================
+    private readonly ConfiguracaoService _configuracaoService = new();
+    private readonly SincronizacaoService _sincronizacaoService = new();
+    private readonly SincronizacaoPedidosService _pedidosService = new();
+    private readonly SemaphoreSlim _exclusao = new(1, 1);
+    public event EventHandler<ResultadoSincronizacao>? SincronizacaoConcluida;
 
     public async Task InicializarAsync()
     {
-        // =====================================================
-        // BANCO LOCAL
-        // =====================================================
-
-        await VerificarBancoLocalAsync();
-
-
-        // =====================================================
-        // CONFIGURAÇÃO
-        // =====================================================
-
-        var configuracao =
-            await _configuracaoService
-                .CarregarAsync();
-
-
-        if (configuracao == null)
-            return;
-
-
-        // =====================================================
-        // API CONFIGURADA?
-        // =====================================================
-
-        if (string.IsNullOrWhiteSpace(
-                configuracao.BaseUrl) ||
-            string.IsNullOrWhiteSpace(
-                configuracao.ClientId) ||
-            string.IsNullOrWhiteSpace(
-                configuracao.ClientSecret))
+        try { await SincronizarAsync(); }
+        catch (Exception ex)
         {
-            return;
-        }
-
-
-        // =====================================================
-        // SINCRONIZAÇÃO
-        // =====================================================
-
-        try
-        {
-            await _sincronizacaoService
-                .SincronizarTudoAsync();
-
-
-            configuracao.UltimaSincronizacao =
-                DateTime.Now;
-
-
-            await _configuracaoService
-                .SalvarAsync(
-                    configuracao
-                );
-
-
-            // =================================================
-            // AVISA QUE O SQLITE FOI ATUALIZADO
-            // =================================================
-
-            SincronizacaoConcluida?.Invoke(
-                this,
-                EventArgs.Empty
-            );
-        }
-        catch
-        {
-            // A aplicação continua trabalhando
-            // normalmente com os dados locais.
+            System.Diagnostics.Trace.WriteLine($"Sincronização inicial: {ex.Message}");
         }
     }
 
-
-    // =========================================================
-    // VERIFICAR BANCO LOCAL
-    // =========================================================
-
-    private static async Task VerificarBancoLocalAsync()
+    public async Task<ResultadoSincronizacao> SincronizarAsync()
     {
-        await using LocalDbContext db =
-            new LocalDbContext();
-
-        await db.Database
-            .CanConnectAsync();
+        await _exclusao.WaitAsync();
+        var resultado = new ResultadoSincronizacao();
+        try
+        {
+            var config = await _configuracaoService.CarregarAsync();
+            if (config == null)
+            {
+                resultado.Erros.Add("Salve a configuração antes de sincronizar.");
+                return resultado;
+            }
+            if (!string.IsNullOrWhiteSpace(config.BaseUrl) &&
+                !string.IsNullOrWhiteSpace(config.ClientId) &&
+                !string.IsNullOrWhiteSpace(config.ClientSecret))
+            {
+                resultado.Executada = true;
+                try { resultado.Produtos = await _sincronizacaoService.SincronizarProdutosAsync(); }
+                catch (Exception ex) { resultado.Erros.Add($"Produtos: {ex.Message}"); }
+                try { resultado.Clientes = await _sincronizacaoService.SincronizarClientesAsync(); }
+                catch (Exception ex) { resultado.Erros.Add($"Clientes: {ex.Message}"); }
+            }
+            if (!string.IsNullOrWhiteSpace(config.SqlServidor) &&
+                !string.IsNullOrWhiteSpace(config.SqlBanco) &&
+                !string.IsNullOrWhiteSpace(config.SqlUsuario))
+            {
+                resultado.Executada = true;
+                try
+                {
+                    var envio = await _pedidosService.SincronizarAsync();
+                    resultado.Pedidos = envio.Enviados;
+                    resultado.Erros.AddRange(envio.Erros);
+                }
+                catch (Exception ex) { resultado.Erros.Add($"Pedidos: {ex.Message}"); }
+            }
+            if (!resultado.Executada)
+                resultado.Erros.Add("Configure a API ou o SQL Server para sincronizar.");
+            if (resultado.Executada && resultado.Erros.Count == 0)
+                await _configuracaoService.AtualizarUltimaSincronizacaoAsync(DateTime.Now);
+            return resultado;
+        }
+        finally
+        {
+            _exclusao.Release();
+            // Atualiza a tela também quando houve sucesso parcial.
+            if (resultado.Executada) SincronizacaoConcluida?.Invoke(this, resultado);
+        }
     }
 }

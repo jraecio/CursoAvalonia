@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
+    <Compile Remove="Tests\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

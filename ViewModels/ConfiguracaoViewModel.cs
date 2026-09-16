@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Input;
 using CursoAvalonia.Models;
 using CursoAvalonia.Services;
 using System;
@@ -22,7 +22,8 @@ public partial class ConfiguracaoViewModel : ViewModelBase
 
     private readonly ConfiguracaoService _configuracaoService = new();
 
-    private readonly SincronizacaoService _sincronizacaoService = new();
+    private readonly InicializacaoService _inicializacaoService;
+    private readonly Task _carregamento;
 
     private readonly RemoteDbContextFactory _remoteDbFactory = new();
 
@@ -32,13 +33,19 @@ public partial class ConfiguracaoViewModel : ViewModelBase
     // =========================================================
 
     public ConfiguracaoViewModel()
+        : this(new InicializacaoService())
     {
+    }
+
+    public ConfiguracaoViewModel(InicializacaoService inicializacaoService)
+    {
+        _inicializacaoService = inicializacaoService;
         DeviceId = ObterDeviceId();
 
         SqlUsuario = "sa";
         SqlSenha = "qaz@123";
 
-        _ = CarregarConfiguracaoAsync();
+        _carregamento = CarregarConfiguracaoAsync();
     }
 
 
@@ -434,68 +441,27 @@ public partial class ConfiguracaoViewModel : ViewModelBase
     [RelayCommand]
     private async Task TestarConexaoSqlAsync()
     {
+        await _carregamento;
+        string? bancoAnterior = BancoSelecionado;
         try
         {
-            Mensagem = string.Empty;
-
-            StatusSql =
-                "CONECTANDO...";
-
-            CorStatusSql =
-                "#F59E0B";
-
-
+            StatusSql = "CONECTANDO...";
+            CorStatusSql = "#F59E0B";
+            var bancos = await _sqlService.ListarBancosAsync(SqlServidor, SqlUsuario, SqlSenha);
             BancosSql.Clear();
-
-            BancoSelecionado =
-                null;
-
-
-            var bancos =
-                await _sqlService
-                    .ListarBancosAsync(
-                        SqlServidor,
-                        SqlUsuario,
-                        SqlSenha
-                    );
-
-
-            foreach (string banco in bancos)
-            {
-                BancosSql.Add(
-                    banco
-                );
-            }
-
-
-            StatusSql =
-                "CONECTADO";
-
-            CorStatusSql =
-                "#16A34A";
-
-
-            Mensagem =
-                $"Conexão realizada. {BancosSql.Count} banco(s) encontrado(s).";
+            foreach (string banco in bancos) BancosSql.Add(banco);
+            if (!string.IsNullOrWhiteSpace(bancoAnterior) && !BancosSql.Contains(bancoAnterior))
+                BancosSql.Add(bancoAnterior);
+            BancoSelecionado = bancoAnterior;
+            StatusSql = "CONECTADO";
+            CorStatusSql = "#16A34A";
+            Mensagem = $"Conexão realizada. {bancos.Count} banco(s) encontrado(s).";
         }
         catch (Exception ex)
         {
-            BancosSql.Clear();
-
-            BancoSelecionado =
-                null;
-
-
-            StatusSql =
-                "ERRO";
-
-            CorStatusSql =
-                "#DC2626";
-
-
-            Mensagem =
-                "Erro ao conectar no SQL Server: " +
-                ex.Message;
+            StatusSql = "ERRO";
+            CorStatusSql = "#DC2626";
+            Mensagem = "Erro ao conectar no SQL Server: " + ex.Message;
         }
     }
 
@@ -512,6 +478,7 @@ public partial class ConfiguracaoViewModel : ViewModelBase
     [RelayCommand]
     private async Task TestarBancoSelecionadoAsync()
     {
+        await _carregamento;
         try
         {
             if (string.IsNullOrWhiteSpace(
@@ -645,6 +612,7 @@ public partial class ConfiguracaoViewModel : ViewModelBase
     [RelayCommand]
     private async Task SalvarConfiguracaoAsync()
     {
+        await _carregamento;
         try
         {
             ConfiguracaoSistema config =
@@ -785,8 +753,10 @@ public partial class ConfiguracaoViewModel : ViewModelBase
                 : config.SqlSenha;
 
 
-            BancoSelecionado =
-                config.SqlBanco;
+            BancosSql.Clear();
+            if (!string.IsNullOrWhiteSpace(config.SqlBanco))
+                BancosSql.Add(config.SqlBanco);
+            BancoSelecionado = config.SqlBanco;
 
 
             UltimaSincronizacao =
@@ -967,49 +937,30 @@ public partial class ConfiguracaoViewModel : ViewModelBase
     [RelayCommand]
     private async Task SincronizarApiAsync()
     {
+        await _carregamento;
         try
         {
-            Mensagem = string.Empty;
-
-            StatusApi =
-                "SINCRONIZANDO...";
-
-            CorStatusApi =
-                "#F59E0B";
-
-
-            var resultado =
-                await _sincronizacaoService
-                    .SincronizarTudoAsync();
-
-
-            UltimaSincronizacao =
-                DateTime.Now;
-
-
-            StatusApi =
-                "SINCRONIZAÇÃO OK";
-
-            CorStatusApi =
-                "#16A34A";
-
-
-            Mensagem =
-                $"Produtos sincronizados: {resultado.Produtos} | " +
-                $"Clientes sincronizados: {resultado.Clientes}";
+            StatusApi = "SINCRONIZANDO...";
+            CorStatusApi = "#F59E0B";
+            // A sincronização usa exatamente os valores exibidos nesta tela.
+            await PersistirConfiguracaoAtualAsync();
+            var resultado = await _inicializacaoService.SincronizarAsync();
+            var config = await _configuracaoService.CarregarAsync();
+            if (config != null)
+            {
+                UltimaSincronizacao = config.UltimaSincronizacao;
+                Token = config.Token;
+                UltimaAutenticacao = config.UltimaAutenticacao;
+            }
+            StatusApi = resultado.Erros.Count == 0 ? "SINCRONIZAÇÃO OK" : "SINCRONIZAÇÃO COM PENDÊNCIAS";
+            CorStatusApi = resultado.Erros.Count == 0 ? "#16A34A" : "#F59E0B";
+            Mensagem = resultado.Mensagem;
         }
         catch (Exception ex)
         {
-            StatusApi =
-                "ERRO API";
-
-            CorStatusApi =
-                "#DC2626";
-
-
-            Mensagem =
-                "Erro na sincronização: " +
-                ex.Message;
+            StatusApi = "ERRO";
+            CorStatusApi = "#DC2626";
+            Mensagem = "Erro na sincronização: " + ex.Message;
         }
     }
 
@@ -1078,6 +1029,27 @@ public partial class ConfiguracaoViewModel : ViewModelBase
     // =========================================================
     // CRIAR CONFIGURAÇÃO API ATUAL
     // =========================================================
+
+    private Task PersistirConfiguracaoAtualAsync()
+    {
+        return _configuracaoService.SalvarAsync(new ConfiguracaoSistema
+        {
+            BaseUrl = BaseUrl,
+            ClientId = ClientId,
+            ClientSecret = ClientSecret,
+            EmpresaNome = EmpresaNome,
+            EmpresaCnpj = EmpresaCnpj,
+            DeviceName = DeviceName,
+            DeviceId = DeviceId,
+            Token = Token,
+            UltimaAutenticacao = UltimaAutenticacao,
+            SqlServidor = SqlServidor,
+            SqlBanco = BancoSelecionado ?? string.Empty,
+            SqlUsuario = SqlUsuario,
+            SqlSenha = SqlSenha,
+            UltimaSincronizacao = UltimaSincronizacao
+        });
+    }
 
     private ConfiguracaoApi CriarConfiguracaoAtual()
     {

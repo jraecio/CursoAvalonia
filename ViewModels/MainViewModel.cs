@@ -248,6 +248,7 @@ public partial class MainViewModel : ViewModelBase
         new();
 
     private readonly InicializacaoService _inicializacaoService;
+    public InicializacaoService InicializacaoService => _inicializacaoService;
 
 
     // =========================================================
@@ -296,7 +297,7 @@ public partial class MainViewModel : ViewModelBase
     private async void
         InicializacaoService_SincronizacaoConcluida(
             object? sender,
-            EventArgs e)
+            ResultadoSincronizacao e)
     {
         try
         {
@@ -311,7 +312,7 @@ public partial class MainViewModel : ViewModelBase
                     await CarregarClientesDoBancoAsync();
 
                     Mensagem =
-                        "Produtos e clientes atualizados.";
+                        e.Mensagem;
                 }
             );
         }
@@ -357,6 +358,11 @@ public partial class MainViewModel : ViewModelBase
             await _dadosLocaisService
                 .ListarProdutosAsync();
 
+        int? codigoSelecionado = ProdutoSelecionado?.Codigo;
+        string codigoDigitado = Codigo;
+        string descricaoDigitada = Descricao;
+        string valorDigitado = Valor;
+
 
         Produtos.Clear();
 
@@ -367,6 +373,10 @@ public partial class MainViewModel : ViewModelBase
                 produto
             );
         }
+        ProdutoSelecionado = Produtos.FirstOrDefault(p => p.Codigo == codigoSelecionado);
+        Codigo = codigoDigitado;
+        Descricao = descricaoDigitada;
+        Valor = valorDigitado;
     }
 
 
@@ -380,6 +390,8 @@ public partial class MainViewModel : ViewModelBase
             await _dadosLocaisService
                 .ListarClientesAsync();
 
+        int? clienteId = ClienteSelecionado?.Id;
+
 
         Clientes.Clear();
 
@@ -390,6 +402,7 @@ public partial class MainViewModel : ViewModelBase
                 cliente
             );
         }
+        ClienteSelecionado = Clientes.FirstOrDefault(c => c.Id == clienteId);
     }
 
 

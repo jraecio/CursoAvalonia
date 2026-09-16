@@ -273,6 +273,9 @@ public class VendaService
             }
 
 
+            // Os GUIDs já são preenchidos no modelo; explicita que são linhas novas.
+            db.ItensPedido.AddRange(pedidoBanco.Itens);
+
             db.LogsAuditoria.Add(
                 new LogAuditoria
                 {

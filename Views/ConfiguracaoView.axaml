@@ -456,7 +456,7 @@
 
                             <Button
                                 Grid.Column="2"
-                                Content="SINCRONIZAR API"
+                                Content="SINCRONIZAR"
                                 Background="#2563EB"
                                 Foreground="White"
                                 Command="{Binding SincronizarApiCommand}"/>

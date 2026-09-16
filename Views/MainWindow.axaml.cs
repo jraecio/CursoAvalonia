@@ -103,7 +103,8 @@ public partial class MainWindow : Window
     object? sender,
     Avalonia.Interactivity.RoutedEventArgs e)
     {
-        var janela = new ConfiguracaoWindow();
+        if (DataContext is not CursoAvalonia.ViewModels.MainViewModel vm) return;
+        var janela = new ConfiguracaoWindow(vm.InicializacaoService);
 
         await janela.ShowDialog(this);
     }
